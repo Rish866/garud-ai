@@ -13,7 +13,7 @@ export default function Home() {
           <a href="#contact">Contact</a>
 
           <a
-            href="/dashboard"
+            href="/login"
             className="bg-blue-600 px-4 py-2 rounded-lg"
           >
             Login
@@ -21,7 +21,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="text-center mt-32 px-6">
         <h1 className="text-6xl font-bold mb-6">
           Monitor. Protect. Prevent.
