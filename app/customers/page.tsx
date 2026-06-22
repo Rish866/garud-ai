@@ -1,38 +1,34 @@
-export default function CustomersPage() {
-  const customers = [
-    {
-      name: "ABC Logistics",
-      vehicles: 25,
-      plan: "Professional",
-      revenue: "₹19,975",
-      status: "Active",
-    },
-    {
-      name: "XYZ Mining",
-      vehicles: 12,
-      plan: "Enterprise",
-      revenue: "₹9,588",
-      status: "Active",
-    },
-    {
-      name: "School Bus Fleet",
-      vehicles: 40,
-      plan: "Professional",
-      revenue: "₹31,960",
-      status: "Active",
-    },
-    {
-      name: "FastTrack Transport",
-      vehicles: 8,
-      plan: "Starter",
-      revenue: "₹3,992",
-      status: "Trial",
-    },
-  ];
+import Link from "next/link";
+import { supabase } from "../lib/supabase";
+
+export default async function CustomersPage() {
+  const { data: customers } = await supabase
+    .from("customers")
+    .select("*")
+    .order("id");
+
+  const totalCustomers = customers?.length || 0;
+
+  const totalVehicles =
+    customers?.reduce(
+      (sum, customer) => sum + (customer.vehicles || 0),
+      0
+    ) || 0;
+
+  const totalRevenue =
+    customers?.reduce(
+      (sum, customer) =>
+        sum + Number(customer.monthly_revenue || 0),
+      0
+    ) || 0;
+
+  const activePlans =
+    customers?.filter(
+      (customer) => customer.status === "Active"
+    ).length || 0;
 
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6">
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-4xl font-bold text-blue-500">
@@ -44,39 +40,44 @@ export default function CustomersPage() {
           </p>
         </div>
 
-        <button className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-lg font-semibold">
+        <Link
+          href="/customers/add"
+          className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-lg font-semibold"
+        >
           + Add Customer
-        </button>
+        </Link>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid md:grid-cols-4 gap-6 mb-8">
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">Total Customers</p>
-          <h2 className="text-3xl font-bold mt-2">4</h2>
+          <h2 className="text-3xl font-bold mt-2">
+            {totalCustomers}
+          </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">Total Vehicles</p>
-          <h2 className="text-3xl font-bold mt-2">85</h2>
+          <h2 className="text-3xl font-bold mt-2">
+            {totalVehicles}
+          </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">Monthly Revenue</p>
           <h2 className="text-3xl font-bold mt-2 text-green-500">
-            ₹65,515
+            ₹{totalRevenue.toLocaleString()}
           </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">Active Plans</p>
           <h2 className="text-3xl font-bold mt-2 text-blue-500">
-            3
+            {activePlans}
           </h2>
         </div>
       </div>
 
-      {/* Customer Table */}
       <div className="bg-slate-900 rounded-xl p-6">
         <h2 className="text-2xl font-bold mb-6">
           Customer List
@@ -94,13 +95,18 @@ export default function CustomersPage() {
           </thead>
 
           <tbody>
-            {customers.map((customer) => (
+            {customers?.map((customer) => (
               <tr
-                key={customer.name}
+                key={customer.id}
                 className="border-b border-slate-800 hover:bg-slate-800/30"
               >
                 <td className="py-4 font-medium">
-                  {customer.name}
+                  <Link
+                    href={`/customers/${customer.id}`}
+                    className="text-blue-400 hover:text-blue-300"
+                  >
+                    {customer.company_name}
+                  </Link>
                 </td>
 
                 <td>{customer.vehicles}</td>
@@ -112,7 +118,10 @@ export default function CustomersPage() {
                 </td>
 
                 <td className="text-green-500 font-semibold">
-                  {customer.revenue}
+                  ₹
+                  {Number(
+                    customer.monthly_revenue
+                  ).toLocaleString()}
                 </td>
 
                 <td>
@@ -130,39 +139,6 @@ export default function CustomersPage() {
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* SaaS Metrics */}
-      <div className="grid md:grid-cols-3 gap-6 mt-8">
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <h3 className="text-xl font-bold mb-2">
-            Monthly Recurring Revenue
-          </h3>
-
-          <p className="text-4xl font-bold text-green-500">
-            ₹65,515
-          </p>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <h3 className="text-xl font-bold mb-2">
-            Average Revenue / Customer
-          </h3>
-
-          <p className="text-4xl font-bold text-blue-500">
-            ₹16,378
-          </p>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <h3 className="text-xl font-bold mb-2">
-            Fleet Retention
-          </h3>
-
-          <p className="text-4xl font-bold text-yellow-400">
-            98%
-          </p>
-        </div>
       </div>
     </main>
   );

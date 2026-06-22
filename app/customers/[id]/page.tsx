@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { supabase } from "../../lib/supabase";
+
 export default async function CustomerProfile({
   params,
 }: {
@@ -5,61 +8,122 @@ export default async function CustomerProfile({
 }) {
   const { id } = await params;
 
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (!customer) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-white p-6">
+        <h1 className="text-3xl font-bold text-red-500">
+          Customer Not Found
+        </h1>
+
+        <Link
+          href="/customers"
+          className="text-blue-400"
+        >
+          Back to Customers
+        </Link>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6">
-      <h1 className="text-4xl font-bold text-blue-500 mb-2">
-        Customer Profile
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-4xl font-bold text-blue-500">
+            Customer Profile
+          </h1>
 
-      <p className="text-slate-400 mb-8">
-        Customer ID: {id}
-      </p>
+          <p className="text-slate-400 mt-2">
+            Customer ID: {customer.id}
+          </p>
+        </div>
 
-      {/* Customer Info */}
+        <Link
+          href="/customers"
+          className="bg-slate-800 px-4 py-2 rounded"
+        >
+          Back
+        </Link>
+      </div>
+
       <div className="bg-slate-900 rounded-xl p-6 mb-6">
         <h2 className="text-2xl font-bold mb-4">
           Company Information
         </h2>
 
         <div className="space-y-2">
-          <p><strong>Company:</strong> ABC Logistics</p>
-          <p><strong>Plan:</strong> Professional</p>
-          <p><strong>Vehicles:</strong> 25</p>
-          <p><strong>Status:</strong> Active</p>
-          <p><strong>Monthly Billing:</strong> ₹19,975</p>
+          <p>
+            <strong>Company:</strong>{" "}
+            {customer.company_name}
+          </p>
+
+          <p>
+            <strong>Plan:</strong>{" "}
+            {customer.plan}
+          </p>
+
+          <p>
+            <strong>Vehicles:</strong>{" "}
+            {customer.vehicles}
+          </p>
+
+          <p>
+            <strong>Status:</strong>{" "}
+            {customer.status}
+          </p>
+
+          <p>
+            <strong>Monthly Billing:</strong> ₹
+            {Number(
+              customer.monthly_revenue
+            ).toLocaleString()}
+          </p>
         </div>
       </div>
 
-      {/* Vehicles */}
-      <div className="bg-slate-900 rounded-xl p-6 mb-6">
-        <h2 className="text-2xl font-bold mb-4">
-          Assigned Vehicles
-        </h2>
-
-        <ul className="space-y-2">
-          <li>🚛 MH46AB1234</li>
-          <li>🚛 MH04XY5678</li>
-          <li>🚛 MH12PQ7890</li>
-        </ul>
-      </div>
-
-      {/* AI Alerts */}
       <div className="bg-slate-900 rounded-xl p-6">
         <h2 className="text-2xl font-bold mb-4">
-          Recent AI Alerts
+          Account Summary
         </h2>
 
-        <div className="space-y-3">
-          <div className="bg-red-900/30 p-4 rounded-lg">
-            🔴 Mobile phone usage detected
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-slate-800 p-4 rounded">
+            <p className="text-slate-400">
+              Fleet Size
+            </p>
+
+            <h3 className="text-3xl font-bold">
+              {customer.vehicles}
+            </h3>
           </div>
 
-          <div className="bg-yellow-900/30 p-4 rounded-lg">
-            🟠 Driver fatigue detected
+          <div className="bg-slate-800 p-4 rounded">
+            <p className="text-slate-400">
+              Plan
+            </p>
+
+            <h3 className="text-3xl font-bold">
+              {customer.plan}
+            </h3>
           </div>
 
-          <div className="bg-orange-900/30 p-4 rounded-lg">
-            🟡 Harsh braking detected
+          <div className="bg-slate-800 p-4 rounded">
+            <p className="text-slate-400">
+              Monthly Revenue
+            </p>
+
+            <h3 className="text-3xl font-bold text-green-500">
+              ₹
+              {Number(
+                customer.monthly_revenue
+              ).toLocaleString()}
+            </h3>
           </div>
         </div>
       </div>
