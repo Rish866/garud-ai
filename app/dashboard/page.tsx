@@ -6,9 +6,31 @@ const Map = dynamic(() => import("../components/Map"), {
   ssr: false,
 });
 
+const vehicles = [
+  {
+    number: "MH46AB1234",
+    driver: "Rajesh",
+    status: "Online",
+    speed: "54 km/h",
+  },
+  {
+    number: "MH04XY5678",
+    driver: "Amit",
+    status: "Idle",
+    speed: "0 km/h",
+  },
+  {
+    number: "MH12PQ7890",
+    driver: "Sunil",
+    status: "Offline",
+    speed: "0 km/h",
+  },
+];
+
 export default function Dashboard() {
   return (
     <main className="min-h-screen bg-slate-950 text-white flex">
+
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 p-6">
         <h1 className="text-2xl font-bold text-blue-500 mb-10">
@@ -16,32 +38,20 @@ export default function Dashboard() {
         </h1>
 
         <nav className="space-y-4">
-          <div className="cursor-pointer hover:text-blue-400">
-            Dashboard
-          </div>
-          <div className="cursor-pointer hover:text-blue-400">
-            Live View
-          </div>
-          <div className="cursor-pointer hover:text-blue-400">
-            Vehicles
-          </div>
-          <div className="cursor-pointer hover:text-blue-400">
-            Playback
-          </div>
-          <div className="cursor-pointer hover:text-blue-400">
-            AI Alerts
-          </div>
-          <div className="cursor-pointer hover:text-blue-400">
-            Reports
-          </div>
-          <div className="cursor-pointer hover:text-blue-400">
-            Settings
-          </div>
+          <div>📊 Dashboard</div>
+          <div>📍 Live Tracking</div>
+          <div>🚛 Vehicles</div>
+          <div>🎥 Live View</div>
+          <div>📹 Playback</div>
+          <div>⚠️ AI Alerts</div>
+          <div>📈 Reports</div>
+          <div>⚙️ Settings</div>
         </nav>
       </aside>
 
-      {/* Main Content */}
-      <section className="flex-1 p-8">
+      {/* Main */}
+      <section className="flex-1 p-6">
+
         <h1 className="text-4xl font-bold mb-8">
           Fleet Monitoring Dashboard
         </h1>
@@ -69,56 +79,51 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Map */}
-        <div className="bg-slate-900 rounded-xl p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">
-            Live Vehicle Map
-          </h2>
+        {/* Fleet + Map */}
+        <div className="grid lg:grid-cols-4 gap-6 mb-8">
 
-          <div className="h-[450px] rounded-xl overflow-hidden">
-            <Map />
+          {/* Vehicle Panel */}
+          <div className="bg-slate-900 rounded-xl p-4">
+            <h2 className="text-xl font-bold mb-4">
+              Fleet Vehicles
+            </h2>
+
+            <div className="space-y-3">
+              {vehicles.map((vehicle) => (
+                <div
+                  key={vehicle.number}
+                  className="bg-slate-800 p-3 rounded-lg"
+                >
+                  <div className="font-semibold">
+                    {vehicle.number}
+                  </div>
+
+                  <div className="text-sm text-slate-400">
+                    {vehicle.driver}
+                  </div>
+
+                  <div className="text-sm mt-2">
+                    {vehicle.status}
+                  </div>
+
+                  <div className="text-xs text-slate-500">
+                    {vehicle.speed}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Vehicles */}
-        <div className="bg-slate-900 rounded-xl p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">
-            Active Vehicles
-          </h2>
+          {/* Map */}
+          <div className="lg:col-span-3 bg-slate-900 rounded-xl p-4">
+            <h2 className="text-xl font-bold mb-4">
+              Live Vehicle Tracking
+            </h2>
 
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-700">
-                <th className="text-left py-3">Vehicle</th>
-                <th className="text-left py-3">Driver</th>
-                <th className="text-left py-3">Status</th>
-                <th className="text-left py-3">Speed</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td className="py-3">MH46AB1234</td>
-                <td>Rajesh</td>
-                <td className="text-green-500">Online</td>
-                <td>54 km/h</td>
-              </tr>
-
-              <tr>
-                <td className="py-3">MH04XY5678</td>
-                <td>Amit</td>
-                <td className="text-green-500">Online</td>
-                <td>42 km/h</td>
-              </tr>
-
-              <tr>
-                <td className="py-3">MH12PQ7890</td>
-                <td>Sunil</td>
-                <td className="text-red-500">Offline</td>
-                <td>0 km/h</td>
-              </tr>
-            </tbody>
-          </table>
+            <div className="h-[500px] rounded-xl overflow-hidden">
+              <Map />
+            </div>
+          </div>
         </div>
 
         {/* AI Alerts */}
@@ -128,6 +133,7 @@ export default function Dashboard() {
           </h2>
 
           <div className="space-y-3">
+
             <div className="bg-red-900/30 p-4 rounded-lg">
               🔴 Driver using mobile phone detected
             </div>
@@ -139,8 +145,10 @@ export default function Dashboard() {
             <div className="bg-orange-900/30 p-4 rounded-lg">
               🟡 Harsh braking detected
             </div>
+
           </div>
         </div>
+
       </section>
     </main>
   );
