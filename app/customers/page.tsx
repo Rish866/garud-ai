@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
+import CustomerTable from "../components/CustomerTable";
 
 export default async function CustomersPage() {
-  const { data: customers } = await supabase
+  const { data: customers, error } = await supabase
     .from("customers")
     .select("*")
     .order("id");
@@ -48,30 +49,46 @@ export default async function CustomersPage() {
         </Link>
       </div>
 
+      {error && (
+        <div className="bg-red-900/30 border border-red-500 p-4 rounded-lg mb-6">
+          <pre>
+            {JSON.stringify(error, null, 2)}
+          </pre>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-4 gap-6 mb-8">
         <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">Total Customers</p>
+          <p className="text-slate-400">
+            Total Customers
+          </p>
           <h2 className="text-3xl font-bold mt-2">
             {totalCustomers}
           </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">Total Vehicles</p>
+          <p className="text-slate-400">
+            Total Vehicles
+          </p>
           <h2 className="text-3xl font-bold mt-2">
             {totalVehicles}
           </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">Monthly Revenue</p>
+          <p className="text-slate-400">
+            Monthly Revenue
+          </p>
           <h2 className="text-3xl font-bold mt-2 text-green-500">
             ₹{totalRevenue.toLocaleString()}
           </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">Active Plans</p>
+          <p className="text-slate-400">
+            Active Plans
+          </p>
           <h2 className="text-3xl font-bold mt-2 text-blue-500">
             {activePlans}
           </h2>
@@ -83,62 +100,9 @@ export default async function CustomersPage() {
           Customer List
         </h2>
 
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left py-4">Customer</th>
-              <th className="text-left py-4">Vehicles</th>
-              <th className="text-left py-4">Plan</th>
-              <th className="text-left py-4">Revenue</th>
-              <th className="text-left py-4">Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {customers?.map((customer) => (
-              <tr
-                key={customer.id}
-                className="border-b border-slate-800 hover:bg-slate-800/30"
-              >
-                <td className="py-4 font-medium">
-                  <Link
-                    href={`/customers/${customer.id}`}
-                    className="text-blue-400 hover:text-blue-300"
-                  >
-                    {customer.company_name}
-                  </Link>
-                </td>
-
-                <td>{customer.vehicles}</td>
-
-                <td>
-                  <span className="bg-blue-900/40 px-3 py-1 rounded">
-                    {customer.plan}
-                  </span>
-                </td>
-
-                <td className="text-green-500 font-semibold">
-                  ₹
-                  {Number(
-                    customer.monthly_revenue
-                  ).toLocaleString()}
-                </td>
-
-                <td>
-                  <span
-                    className={
-                      customer.status === "Active"
-                        ? "text-green-500"
-                        : "text-yellow-500"
-                    }
-                  >
-                    {customer.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <CustomerTable
+          customers={customers || []}
+        />
       </div>
     </main>
   );
