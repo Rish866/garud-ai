@@ -4,7 +4,12 @@ import { supabase } from "../lib/supabase";
 export default async function TripsPage() {
   const { data: trips, error } = await supabase
     .from("trips")
-    .select("*")
+    .select(`
+      *,
+      customers(company_name),
+      vehicles(vehicle_number),
+      drivers(name)
+    `)
     .order("id", { ascending: false });
 
   return (
@@ -38,7 +43,9 @@ export default async function TripsPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-700">
-              <th className="text-left py-3">ID</th>
+              <th className="text-left py-3">Customer</th>
+              <th className="text-left py-3">Vehicle</th>
+              <th className="text-left py-3">Driver</th>
               <th className="text-left py-3">Origin</th>
               <th className="text-left py-3">Destination</th>
               <th className="text-left py-3">Revenue</th>
@@ -52,12 +59,26 @@ export default async function TripsPage() {
                 key={trip.id}
                 className="border-b border-slate-800"
               >
-                <td className="py-4">{trip.id}</td>
+                <td className="py-4">
+                  {trip.customers?.company_name || "-"}
+                </td>
+
+                <td>
+                  {trip.vehicles?.vehicle_number || "-"}
+                </td>
+
+                <td>
+                  {trip.drivers?.name || "-"}
+                </td>
+
                 <td>{trip.origin}</td>
+
                 <td>{trip.destination}</td>
+
                 <td>
                   ₹{Number(trip.revenue).toLocaleString()}
                 </td>
+
                 <td>
                   <span
                     className={
