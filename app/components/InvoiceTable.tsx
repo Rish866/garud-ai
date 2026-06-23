@@ -47,7 +47,7 @@ export default function InvoiceTable({
           </th>
 
           <th className="text-left py-3">
-            Action
+            Actions
           </th>
         </tr>
       </thead>
@@ -88,7 +88,7 @@ export default function InvoiceTable({
               </span>
             </td>
 
-            <td>
+            <td className="space-x-2">
               {invoice.status !==
                 "Paid" && (
                 <button
@@ -102,6 +102,14 @@ export default function InvoiceTable({
                   Mark Paid
                 </button>
               )}
+
+              <a
+                href={`/api/invoices/${invoice.id}/pdf`}
+                target="_blank"
+                className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+              >
+                Download PDF
+              </a>
             </td>
           </tr>
         ))}
