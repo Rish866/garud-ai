@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
+import TripTable from "../components/TripTable";
 
 export default async function TripsPage() {
   const { data: trips, error } = await supabase
@@ -35,73 +36,14 @@ export default async function TripsPage() {
 
       {error && (
         <div className="bg-red-900/30 border border-red-500 p-4 rounded-lg mb-6">
-          <pre>{JSON.stringify(error, null, 2)}</pre>
+          <pre>
+            {JSON.stringify(error, null, 2)}
+          </pre>
         </div>
       )}
 
       <div className="bg-slate-900 rounded-xl p-6">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left py-3">Customer</th>
-              <th className="text-left py-3">Vehicle</th>
-              <th className="text-left py-3">Driver</th>
-              <th className="text-left py-3">Origin</th>
-              <th className="text-left py-3">Destination</th>
-              <th className="text-left py-3">Revenue</th>
-              <th className="text-left py-3">Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {trips?.map((trip: any) => (
-              <tr
-                key={trip.id}
-                className="border-b border-slate-800"
-              >
-                <td className="py-4">
-                  {trip.customers?.company_name || "-"}
-                </td>
-
-                <td>
-                  {trip.vehicles?.vehicle_number || "-"}
-                </td>
-
-                <td>
-                  {trip.drivers?.name || "-"}
-                </td>
-
-                <td>{trip.origin}</td>
-
-                <td>{trip.destination}</td>
-
-                <td>
-                  ₹{Number(trip.revenue).toLocaleString()}
-                </td>
-
-                <td>
-                  <span
-                    className={
-                      trip.status === "Completed"
-                        ? "text-green-500"
-                        : trip.status === "In Progress"
-                        ? "text-yellow-500"
-                        : "text-blue-500"
-                    }
-                  >
-                    {trip.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {trips?.length === 0 && (
-          <p className="mt-4 text-yellow-400">
-            No trips found.
-          </p>
-        )}
+        <TripTable trips={trips || []} />
       </div>
     </main>
   );
