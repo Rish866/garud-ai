@@ -39,7 +39,15 @@ export default function InvoiceTable({
           </th>
 
           <th className="text-left py-3">
-            Amount
+            Invoice Amount
+          </th>
+
+          <th className="text-left py-3">
+            Paid
+          </th>
+
+          <th className="text-left py-3">
+            Outstanding
           </th>
 
           <th className="text-left py-3">
@@ -53,66 +61,103 @@ export default function InvoiceTable({
       </thead>
 
       <tbody>
-        {invoices.map((invoice: any) => (
-          <tr
-            key={invoice.id}
-            className="border-b border-slate-800"
-          >
-            <td className="py-4">
-              {invoice.invoice_number}
-            </td>
+        {invoices.map((invoice: any) => {
+          const paidAmount =
+            Number(invoice.amount_paid || 0);
 
-            <td>
-              {invoice.trips?.origin}
-              {" → "}
-              {invoice.trips?.destination}
-            </td>
+          const invoiceAmount =
+            Number(invoice.invoice_amount || invoice.amount || 0);
 
-            <td>
-              ₹
-              {Number(
-                invoice.amount
-              ).toLocaleString()}
-            </td>
+          const outstandingAmount =
+            Number(invoice.outstanding_amount ??
+              invoiceAmount - paidAmount);
 
-            <td>
-              <span
-                className={
-                  invoice.status ===
-                  "Paid"
-                    ? "text-green-500"
-                    : "text-yellow-500"
-                }
-              >
-                {invoice.status}
-              </span>
-            </td>
+          let paymentStatus = "Unpaid";
+          let statusClass =
+            "text-red-500";
 
-            <td className="space-x-2">
-              {invoice.status !==
-                "Paid" && (
-                <button
-                  onClick={() =>
-                    markPaid(
-                      invoice.id
-                    )
+          if (
+            outstandingAmount <= 0 &&
+            invoiceAmount > 0
+          ) {
+            paymentStatus = "Paid";
+            statusClass =
+              "text-green-500";
+          } else if (
+            paidAmount > 0
+          ) {
+            paymentStatus =
+              "Partial";
+            statusClass =
+              "text-yellow-500";
+          }
+
+          return (
+            <tr
+              key={invoice.id}
+              className="border-b border-slate-800"
+            >
+              <td className="py-4">
+                {invoice.invoice_number}
+              </td>
+
+              <td>
+                {invoice.trips?.origin}
+                {" -> "}
+                {invoice.trips?.destination}
+              </td>
+
+              <td>
+                ₹
+                {invoiceAmount.toLocaleString()}
+              </td>
+
+              <td className="text-green-500">
+                ₹
+                {paidAmount.toLocaleString()}
+              </td>
+
+              <td className="text-red-500">
+                ₹
+                {outstandingAmount.toLocaleString()}
+              </td>
+
+              <td>
+                <span
+                  className={
+                    statusClass
                   }
-                  className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded"
                 >
-                  Mark Paid
-                </button>
-              )}
+                  {paymentStatus}
+                </span>
+              </td>
 
-              <a
-                href={`/api/invoices/${invoice.id}/pdf`}
-                target="_blank"
-                className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
-              >
-                Download PDF
-              </a>
-            </td>
-          </tr>
-        ))}
+              <td className="space-x-2">
+                {paymentStatus !==
+                  "Paid" && (
+                  <button
+                    onClick={() =>
+                      markPaid(
+                        invoice.id
+                      )
+                    }
+                    className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded"
+                  >
+                    Mark Paid
+                  </button>
+                )}
+
+                <a
+                  href={`/api/invoices/${invoice.id}/pdf`}
+                  target="_blank"
+                  className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+                >
+                  Download PDF
+                </a>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

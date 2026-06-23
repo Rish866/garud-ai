@@ -17,44 +17,81 @@ export default async function InvoicesPage() {
         ascending: false,
       });
 
+  const { data: balances } =
+    await supabase
+      .from("invoice_balances")
+      .select("*");
+
+  const enrichedInvoices =
+    invoices?.map((invoice: any) => {
+      const balance =
+        balances?.find(
+          (b: any) =>
+            b.id === invoice.id
+        );
+
+      return {
+        ...invoice,
+        invoice_amount:
+          balance?.invoice_amount ||
+          invoice.amount,
+        amount_paid:
+          balance?.amount_paid || 0,
+        outstanding_amount:
+          balance?.outstanding_amount ||
+          invoice.amount,
+      };
+    }) || [];
+
   const totalInvoices =
-    invoices?.length || 0;
+    enrichedInvoices.length;
 
   const paidInvoices =
-    invoices?.filter(
-      (invoice) =>
-        invoice.status === "Paid"
-    ).length || 0;
+    enrichedInvoices.filter(
+      (invoice: any) =>
+        Number(
+          invoice.outstanding_amount
+        ) <= 0
+    ).length;
 
   const pendingInvoices =
-    invoices?.filter(
-      (invoice) =>
-        invoice.status === "Pending"
-    ).length || 0;
+    enrichedInvoices.filter(
+      (invoice: any) =>
+        Number(
+          invoice.outstanding_amount
+        ) > 0
+    ).length;
 
   const totalRevenue =
-    invoices?.reduce(
-      (sum, invoice) =>
+    enrichedInvoices.reduce(
+      (sum: number, invoice: any) =>
         sum +
-        Number(invoice.amount || 0),
+        Number(
+          invoice.invoice_amount || 0
+        ),
       0
-    ) || 0;
+    );
 
   const collectedRevenue =
-    invoices?.reduce(
-      (sum, invoice) =>
-        invoice.status === "Paid"
-          ? sum +
-            Number(
-              invoice.amount || 0
-            )
-          : sum,
+    enrichedInvoices.reduce(
+      (sum: number, invoice: any) =>
+        sum +
+        Number(
+          invoice.amount_paid || 0
+        ),
       0
-    ) || 0;
+    );
 
   const outstandingRevenue =
-    totalRevenue -
-    collectedRevenue;
+    enrichedInvoices.reduce(
+      (sum: number, invoice: any) =>
+        sum +
+        Number(
+          invoice.outstanding_amount ||
+            0
+        ),
+      0
+    );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6">
@@ -90,7 +127,7 @@ export default async function InvoicesPage() {
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">
-            Paid Invoices
+            Fully Paid
           </p>
 
           <h2 className="text-3xl font-bold text-green-500">
@@ -100,7 +137,7 @@ export default async function InvoicesPage() {
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">
-            Pending Invoices
+            Outstanding
           </p>
 
           <h2 className="text-3xl font-bold text-yellow-500">
@@ -151,7 +188,7 @@ export default async function InvoicesPage() {
 
       <div className="bg-slate-900 rounded-xl p-6">
         <InvoiceTable
-          invoices={invoices || []}
+          invoices={enrichedInvoices}
         />
       </div>
     </main>

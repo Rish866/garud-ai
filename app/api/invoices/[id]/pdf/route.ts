@@ -16,7 +16,10 @@ export async function GET(
       *,
       trips(
         origin,
-        destination
+        destination,
+        customers(
+          company_name
+        )
       )
     `)
     .eq("id", Number(id))
@@ -25,9 +28,7 @@ export async function GET(
   if (error || !invoice) {
     return new NextResponse(
       "Invoice not found",
-      {
-        status: 404,
-      }
+      { status: 404 }
     );
   }
 
@@ -39,52 +40,46 @@ export async function GET(
     StandardFonts.Helvetica
   );
 
+  const boldFont =
+    await pdfDoc.embedFont(
+      StandardFonts.HelveticaBold
+    );
+
   page.drawText("GARUD AI", {
     x: 50,
-    y: 780,
-    size: 24,
-    font,
+    y: 790,
+    size: 28,
+    font: boldFont,
   });
 
   page.drawText(
-    `Invoice: ${invoice.invoice_number}`,
+    "Fleet Intelligence Platform",
     {
       x: 50,
-      y: 730,
-      size: 16,
+      y: 768,
+      size: 12,
       font,
     }
   );
 
-  page.drawText(
-    `Trip: ${invoice.trips?.origin || "-"} -> ${
-      invoice.trips?.destination || "-"
-    }`,
-    {
-      x: 50,
-      y: 690,
-      size: 14,
-      font,
-    }
-  );
+  page.drawLine({
+    start: { x: 50, y: 748 },
+    end: { x: 545, y: 748 },
+    thickness: 1,
+  });
+
+  page.drawText("INVOICE", {
+    x: 50,
+    y: 705,
+    size: 22,
+    font: boldFont,
+  });
 
   page.drawText(
-    `Amount: Rs ${Number(
-      invoice.amount
-    ).toLocaleString()}`,
+    `Invoice No: ${invoice.invoice_number}`,
     {
       x: 50,
-      y: 650,
-      size: 14,
-      font,
-    }
-  );
-
-  page.drawText(
-    `Status: ${invoice.status}`,
-    {
-      x: 50,
-      y: 610,
+      y: 670,
       size: 14,
       font,
     }
@@ -96,28 +91,154 @@ export async function GET(
     ).toLocaleDateString()}`,
     {
       x: 50,
-      y: 570,
+      y: 645,
       size: 14,
       font,
     }
   );
 
+  page.drawLine({
+    start: { x: 50, y: 620 },
+    end: { x: 545, y: 620 },
+    thickness: 1,
+  });
+
   page.drawText(
-    "Thank you for choosing Garud AI",
+    "Customer Details",
     {
       x: 50,
-      y: 500,
+      y: 585,
+      size: 16,
+      font: boldFont,
+    }
+  );
+
+  page.drawText(
+    `Customer: ${
+      invoice.trips?.customers
+        ?.company_name || "N/A"
+    }`,
+    {
+      x: 50,
+      y: 555,
+      size: 13,
+      font,
+    }
+  );
+
+  page.drawLine({
+    start: { x: 50, y: 525 },
+    end: { x: 545, y: 525 },
+    thickness: 1,
+  });
+
+  page.drawText(
+    "Trip Details",
+    {
+      x: 50,
+      y: 490,
+      size: 16,
+      font: boldFont,
+    }
+  );
+
+  page.drawText(
+    `Origin: ${
+      invoice.trips?.origin || "-"
+    }`,
+    {
+      x: 50,
+      y: 460,
+      size: 13,
+      font,
+    }
+  );
+
+  page.drawText(
+    `Destination: ${
+      invoice.trips?.destination || "-"
+    }`,
+    {
+      x: 50,
+      y: 435,
+      size: 13,
+      font,
+    }
+  );
+
+  page.drawLine({
+    start: { x: 50, y: 400 },
+    end: { x: 545, y: 400 },
+    thickness: 1,
+  });
+
+  page.drawText(
+    "Billing Summary",
+    {
+      x: 50,
+      y: 365,
+      size: 16,
+      font: boldFont,
+    }
+  );
+
+  page.drawText(
+    `Amount: Rs ${Number(
+      invoice.amount
+    ).toLocaleString()}`,
+    {
+      x: 50,
+      y: 335,
+      size: 14,
+      font: boldFont,
+    }
+  );
+
+  page.drawText(
+    `Status: ${invoice.status}`,
+    {
+      x: 50,
+      y: 305,
+      size: 14,
+      font,
+    }
+  );
+
+  page.drawLine({
+    start: { x: 50, y: 260 },
+    end: { x: 545, y: 260 },
+    thickness: 1,
+  });
+
+  page.drawText(
+    "Thank you for choosing Garud AI.",
+    {
+      x: 50,
+      y: 225,
       size: 12,
       font,
     }
   );
 
-  const pdfBytes = await pdfDoc.save();
+  page.drawText(
+    "Generated automatically by Garud AI Fleet Platform",
+    {
+      x: 50,
+      y: 205,
+      size: 10,
+      font,
+    }
+  );
+
+  const pdfBytes =
+    await pdfDoc.save();
 
   return new NextResponse(pdfBytes, {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${invoice.invoice_number}.pdf"`,
+      "Content-Type":
+        "application/pdf",
+      "Content-Disposition":
+        `attachment; filename="${invoice.invoice_number}.pdf"`,
     },
   });
 }
