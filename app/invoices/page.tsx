@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
+import InvoiceTable from "../components/InvoiceTable";
 
 export default async function InvoicesPage() {
   const { data: invoices, error } =
@@ -15,6 +16,45 @@ export default async function InvoicesPage() {
       .order("id", {
         ascending: false,
       });
+
+  const totalInvoices =
+    invoices?.length || 0;
+
+  const paidInvoices =
+    invoices?.filter(
+      (invoice) =>
+        invoice.status === "Paid"
+    ).length || 0;
+
+  const pendingInvoices =
+    invoices?.filter(
+      (invoice) =>
+        invoice.status === "Pending"
+    ).length || 0;
+
+  const totalRevenue =
+    invoices?.reduce(
+      (sum, invoice) =>
+        sum +
+        Number(invoice.amount || 0),
+      0
+    ) || 0;
+
+  const collectedRevenue =
+    invoices?.reduce(
+      (sum, invoice) =>
+        invoice.status === "Paid"
+          ? sum +
+            Number(
+              invoice.amount || 0
+            )
+          : sum,
+      0
+    ) || 0;
+
+  const outstandingRevenue =
+    totalRevenue -
+    collectedRevenue;
 
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6">
@@ -37,6 +77,70 @@ export default async function InvoicesPage() {
         </Link>
       </div>
 
+      <div className="grid md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-slate-400">
+            Total Invoices
+          </p>
+
+          <h2 className="text-3xl font-bold">
+            {totalInvoices}
+          </h2>
+        </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-slate-400">
+            Paid Invoices
+          </p>
+
+          <h2 className="text-3xl font-bold text-green-500">
+            {paidInvoices}
+          </h2>
+        </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-slate-400">
+            Pending Invoices
+          </p>
+
+          <h2 className="text-3xl font-bold text-yellow-500">
+            {pendingInvoices}
+          </h2>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-slate-400">
+            Total Revenue
+          </p>
+
+          <h2 className="text-3xl font-bold text-blue-500">
+            ₹{totalRevenue.toLocaleString()}
+          </h2>
+        </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-slate-400">
+            Collected Revenue
+          </p>
+
+          <h2 className="text-3xl font-bold text-green-500">
+            ₹{collectedRevenue.toLocaleString()}
+          </h2>
+        </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-slate-400">
+            Outstanding Revenue
+          </p>
+
+          <h2 className="text-3xl font-bold text-red-500">
+            ₹{outstandingRevenue.toLocaleString()}
+          </h2>
+        </div>
+      </div>
+
       {error && (
         <div className="bg-red-900/30 border border-red-500 p-4 rounded-lg mb-6">
           <pre>
@@ -46,72 +150,9 @@ export default async function InvoicesPage() {
       )}
 
       <div className="bg-slate-900 rounded-xl p-6">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left py-3">
-                Invoice
-              </th>
-              <th className="text-left py-3">
-                Trip
-              </th>
-              <th className="text-left py-3">
-                Amount
-              </th>
-              <th className="text-left py-3">
-                Status
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {invoices?.map(
-              (invoice: any) => (
-                <tr
-                  key={invoice.id}
-                  className="border-b border-slate-800"
-                >
-                  <td className="py-4">
-                    {
-                      invoice.invoice_number
-                    }
-                  </td>
-
-                  <td>
-                    {
-                      invoice.trips
-                        ?.origin
-                    }
-                    {" → "}
-                    {
-                      invoice.trips
-                        ?.destination
-                    }
-                  </td>
-
-                  <td>
-                    ₹
-                    {Number(
-                      invoice.amount
-                    ).toLocaleString()}
-                  </td>
-
-                  <td>
-                    {
-                      invoice.status
-                    }
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
-
-        {invoices?.length === 0 && (
-          <p className="mt-4 text-yellow-400">
-            No invoices found.
-          </p>
-        )}
+        <InvoiceTable
+          invoices={invoices || []}
+        />
       </div>
     </main>
   );
