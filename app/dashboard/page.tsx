@@ -16,7 +16,11 @@ export default async function DashboardPage() {
 
   const { data: trips } = await supabase
     .from("trips")
-    .select("*");
+    .select(`
+      *,
+      customers(company_name)
+    `)
+    .order("id", { ascending: false });
 
   const totalVehicles = vehicles?.length || 0;
   const totalDrivers = drivers?.length || 0;
@@ -84,7 +88,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6 mb-6">
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">
             Active Trips
@@ -113,6 +117,51 @@ export default async function DashboardPage() {
           <h2 className="text-3xl font-bold text-blue-500">
             ₹{totalRevenue.toLocaleString()}
           </h2>
+        </div>
+      </div>
+
+      <div className="bg-slate-900 rounded-xl p-6">
+        <h2 className="text-2xl font-bold mb-6">
+          Recent Trips
+        </h2>
+
+        <div className="space-y-4">
+          {trips?.slice(0, 5).map((trip: any) => (
+            <div
+              key={trip.id}
+              className="flex justify-between items-center border-b border-slate-800 pb-3"
+            >
+              <div>
+                <p className="font-semibold">
+                  {trip.customers?.company_name ||
+                    "Unknown Customer"}
+                </p>
+
+                <p className="text-slate-400 text-sm">
+                  {trip.origin} → {trip.destination}
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="font-semibold text-green-500">
+                  ₹
+                  {Number(
+                    trip.revenue
+                  ).toLocaleString()}
+                </p>
+
+                <p className="text-sm text-slate-400">
+                  {trip.status}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {trips?.length === 0 && (
+            <p className="text-yellow-400">
+              No trips found.
+            </p>
+          )}
         </div>
       </div>
     </AppLayout>
