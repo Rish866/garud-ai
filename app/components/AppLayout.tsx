@@ -28,6 +28,13 @@ export default function AppLayout({
           </p>
 
           <a
+            href="/safety-center"
+            className="block hover:text-blue-400"
+          >
+            🖥️ Safety Command Center
+          </a>
+
+          <a
             href="/live"
             className="block hover:text-blue-400"
           >
@@ -47,7 +54,12 @@ export default function AppLayout({
           >
             🎬 Incident Clips
           </a>
-
+<a
+  href="/video-archive"
+  className="block hover:text-blue-400"
+>
+  📹 Video Archive
+</a>
           <a
             href="/driver-score"
             className="block hover:text-blue-400"
@@ -60,6 +72,20 @@ export default function AppLayout({
             className="block hover:text-blue-400"
           >
             ⚠️ Violation History
+          </a>
+
+          <a
+            href="/risk-engine"
+            className="block hover:text-blue-400"
+          >
+            🧠 AI Risk Engine
+          </a>
+
+          <a
+            href="/vehicle-risk"
+            className="block hover:text-blue-400"
+          >
+            🚗 Top Risk Vehicles
           </a>
 
           <hr className="border-slate-800" />
