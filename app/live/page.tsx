@@ -1,112 +1,127 @@
-export default function LiveMonitoringPage() {
+import AppLayout from "../components/AppLayout";
+import { supabase } from "../lib/supabase";
+
+export default async function LiveMonitoringPage() {
+  const { data: vehicles } = await supabase
+    .from("vehicles")
+    .select("*")
+    .order("vehicle_number");
+
+  const selectedVehicle =
+    vehicles && vehicles.length > 0
+      ? vehicles[0]
+      : null;
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6">
+    <AppLayout>
+      <h1 className="text-4xl font-bold text-blue-500 mb-8">
+        🎥 Live Monitoring Center
+      </h1>
 
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-blue-500">
-            GARUD AI
-          </h1>
+      {selectedVehicle && (
+        <div className="bg-slate-900 rounded-xl p-6 mb-8">
 
-          <p className="text-slate-400">
-            Live Dashcam Monitoring Center
-          </p>
+          <div className="flex justify-between items-center">
+
+            <div>
+              <h2 className="text-3xl font-bold text-cyan-400">
+                {selectedVehicle.vehicle_number}
+              </h2>
+
+              <p className="text-slate-400 mt-2">
+                Driver: {selectedVehicle.driver_name}
+              </p>
+            </div>
+
+            <div>
+              <span
+                className={`px-4 py-2 rounded-lg font-bold ${
+                  selectedVehicle.status === "Online"
+                    ? "bg-green-600"
+                    : "bg-red-600"
+                }`}
+              >
+                {selectedVehicle.status}
+              </span>
+            </div>
+
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 mt-6">
+
+            <div className="bg-slate-800 p-4 rounded-lg">
+              <p className="text-slate-400">
+                Latitude
+              </p>
+
+              <p className="text-xl font-bold">
+                {selectedVehicle.latitude}
+              </p>
+            </div>
+
+            <div className="bg-slate-800 p-4 rounded-lg">
+              <p className="text-slate-400">
+                Longitude
+              </p>
+
+              <p className="text-xl font-bold">
+                {selectedVehicle.longitude}
+              </p>
+            </div>
+
+          </div>
+
         </div>
+      )}
 
-        <div className="bg-green-600 px-4 py-2 rounded-lg">
-          ● System Online
-        </div>
-      </div>
-
-      {/* Vehicle Selection */}
-      <div className="bg-slate-900 rounded-xl p-4 mb-6">
-        <h2 className="text-xl font-bold mb-3">
-          Selected Vehicle
-        </h2>
-
-        <div className="text-lg">
-          🚛 MH46AB1234
-        </div>
-      </div>
-
-      {/* Camera Grid */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
 
-        {/* Camera 1 */}
         <div className="bg-slate-900 rounded-xl p-4">
           <h3 className="font-bold mb-3">
             Camera 1 - Road View
           </h3>
 
           <div className="h-64 bg-slate-800 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-5xl mb-4">🎥</div>
-
-              <div className="bg-green-600 px-3 py-1 rounded inline-block">
-                Connected
-              </div>
-            </div>
+            🎥 Live Feed
           </div>
         </div>
 
-        {/* Camera 2 */}
         <div className="bg-slate-900 rounded-xl p-4">
           <h3 className="font-bold mb-3">
             Camera 2 - Driver View
           </h3>
 
           <div className="h-64 bg-slate-800 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-5xl mb-4">🎥</div>
-
-              <div className="bg-green-600 px-3 py-1 rounded inline-block">
-                Connected
-              </div>
-            </div>
+            🎥 Live Feed
           </div>
         </div>
 
-        {/* Camera 3 */}
         <div className="bg-slate-900 rounded-xl p-4">
           <h3 className="font-bold mb-3">
             Camera 3 - Cabin View
           </h3>
 
           <div className="h-64 bg-slate-800 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-5xl mb-4">🎥</div>
-
-              <div className="bg-green-600 px-3 py-1 rounded inline-block">
-                Connected
-              </div>
-            </div>
+            🎥 Live Feed
           </div>
         </div>
 
-        {/* Camera 4 */}
         <div className="bg-slate-900 rounded-xl p-4">
           <h3 className="font-bold mb-3">
             Camera 4 - Rear View
           </h3>
 
           <div className="h-64 bg-slate-800 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-5xl mb-4">🎥</div>
-
-              <div className="bg-green-600 px-3 py-1 rounded inline-block">
-                Connected
-              </div>
-            </div>
+            🎥 Live Feed
           </div>
         </div>
 
       </div>
 
-      {/* Live AI Alerts */}
       <div className="bg-slate-900 rounded-xl p-6 mb-6">
+
         <h2 className="text-2xl font-bold mb-4">
-          Live AI Alerts
+          🚨 Live AI Alerts
         </h2>
 
         <div className="space-y-3">
@@ -124,35 +139,48 @@ export default function LiveMonitoringPage() {
           </div>
 
         </div>
+
       </div>
 
-      {/* Event Timeline */}
       <div className="bg-slate-900 rounded-xl p-6">
+
         <h2 className="text-2xl font-bold mb-4">
-          Event Timeline
+          Vehicle List
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
 
-          <div className="border-l-4 border-red-500 pl-4">
-            10:42 AM - Mobile phone usage detected
-          </div>
+          {vehicles?.map((vehicle: any) => (
+            <div
+              key={vehicle.id}
+              className="flex justify-between bg-slate-800 p-4 rounded-lg"
+            >
+              <div>
+                <p className="font-bold">
+                  {vehicle.vehicle_number}
+                </p>
 
-          <div className="border-l-4 border-yellow-500 pl-4">
-            10:28 AM - Driver fatigue warning
-          </div>
+                <p className="text-slate-400">
+                  {vehicle.driver_name}
+                </p>
+              </div>
 
-          <div className="border-l-4 border-orange-500 pl-4">
-            10:11 AM - Harsh braking detected
-          </div>
-
-          <div className="border-l-4 border-green-500 pl-4">
-            09:58 AM - Vehicle ignition ON
-          </div>
+              <span
+                className={`px-3 py-1 rounded ${
+                  vehicle.status === "Online"
+                    ? "bg-green-600"
+                    : "bg-red-600"
+                }`}
+              >
+                {vehicle.status}
+              </span>
+            </div>
+          ))}
 
         </div>
+
       </div>
 
-    </main>
+    </AppLayout>
   );
 }

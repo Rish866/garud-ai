@@ -111,18 +111,25 @@ export default function AppLayout({
           </p>
 
           <a
-            href="/vehicles"
-            className="block hover:text-blue-400"
-          >
-            🚛 Vehicles
-          </a>
+  href="/vehicles"
+  className="block hover:text-blue-400"
+>
+  🚛 Vehicles
+</a>
 
-          <a
-            href="/drivers"
-            className="block hover:text-blue-400"
-          >
-            👨‍✈️ Drivers
-          </a>
+<a
+  href="/fleet-map"
+  className="block hover:text-blue-400"
+>
+  🗺 Fleet GPS Map
+</a>
+
+<a
+  href="/drivers"
+  className="block hover:text-blue-400"
+>
+  👨‍✈️ Drivers
+</a>
 
           <a
             href="/customers"
