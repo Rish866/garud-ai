@@ -177,7 +177,12 @@ export default function AppLayout({
           >
             📄 Document Center
           </a>
-
+<a
+  href="/document-alerts"
+  className="block hover:text-blue-400"
+>
+  🚨 Document Alerts
+</a>
           <hr className="border-slate-800" />
 
           <p className="text-slate-500 text-xs uppercase">
