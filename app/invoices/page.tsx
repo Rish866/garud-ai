@@ -1,196 +1,179 @@
-import Link from "next/link";
+import AppLayout from "../components/AppLayout";
 import { supabase } from "../lib/supabase";
-import InvoiceTable from "../components/InvoiceTable";
 
 export default async function InvoicesPage() {
-  const { data: invoices, error } =
-    await supabase
-      .from("invoices")
-      .select(`
-        *,
-        trips(
-          origin,
-          destination
-        )
-      `)
-      .order("id", {
-        ascending: false,
-      });
-
-  const { data: balances } =
-    await supabase
-      .from("invoice_balances")
-      .select("*");
-
-  const enrichedInvoices =
-    invoices?.map((invoice: any) => {
-      const balance =
-        balances?.find(
-          (b: any) =>
-            b.id === invoice.id
-        );
-
-      return {
-        ...invoice,
-        invoice_amount:
-          balance?.invoice_amount ||
-          invoice.amount,
-        amount_paid:
-          balance?.amount_paid || 0,
-        outstanding_amount:
-          balance?.outstanding_amount ||
-          invoice.amount,
-      };
-    }) || [];
+  const { data: invoices } = await supabase
+    .from("customer_invoices")
+    .select("*")
+    .order("invoice_date", {
+      ascending: false,
+    });
 
   const totalInvoices =
-    enrichedInvoices.length;
+    invoices?.length || 0;
 
-  const paidInvoices =
-    enrichedInvoices.filter(
-      (invoice: any) =>
-        Number(
-          invoice.outstanding_amount
-        ) <= 0
-    ).length;
-
-  const pendingInvoices =
-    enrichedInvoices.filter(
-      (invoice: any) =>
-        Number(
-          invoice.outstanding_amount
-        ) > 0
-    ).length;
-
-  const totalRevenue =
-    enrichedInvoices.reduce(
+  const totalAmount =
+    invoices?.reduce(
       (sum: number, invoice: any) =>
         sum +
-        Number(
-          invoice.invoice_amount || 0
-        ),
+        Number(invoice.total_amount || 0),
       0
-    );
+    ) || 0;
 
-  const collectedRevenue =
-    enrichedInvoices.reduce(
+  const paidAmount =
+    invoices?.reduce(
       (sum: number, invoice: any) =>
-        sum +
-        Number(
-          invoice.amount_paid || 0
-        ),
+        invoice.status === "Paid"
+          ? sum +
+            Number(
+              invoice.total_amount || 0
+            )
+          : sum,
       0
-    );
+    ) || 0;
 
-  const outstandingRevenue =
-    enrichedInvoices.reduce(
+  const pendingAmount =
+    invoices?.reduce(
       (sum: number, invoice: any) =>
-        sum +
-        Number(
-          invoice.outstanding_amount ||
-            0
-        ),
+        invoice.status === "Pending"
+          ? sum +
+            Number(
+              invoice.total_amount || 0
+            )
+          : sum,
       0
-    );
+    ) || 0;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-blue-500">
-            Invoices
-          </h1>
+    <AppLayout>
+      <h1 className="text-4xl font-bold text-blue-500 mb-8">
+        🧾 Invoice Management
+      </h1>
 
-          <p className="text-slate-400 mt-2">
-            Manage customer invoices
-          </p>
-        </div>
+      <div className="grid md:grid-cols-4 gap-6 mb-8">
 
-        <Link
-          href="/invoices/add"
-          className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-lg font-semibold"
-        >
-          + Create Invoice
-        </Link>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-6 mb-6">
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">
             Total Invoices
           </p>
 
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-4xl font-bold text-cyan-400">
             {totalInvoices}
           </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">
-            Fully Paid
+            Total Billing
           </p>
 
-          <h2 className="text-3xl font-bold text-green-500">
-            {paidInvoices}
+          <h2 className="text-4xl font-bold text-blue-400">
+            ₹{totalAmount.toLocaleString()}
           </h2>
         </div>
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">
-            Outstanding
+            Paid Amount
           </p>
 
-          <h2 className="text-3xl font-bold text-yellow-500">
-            {pendingInvoices}
+          <h2 className="text-4xl font-bold text-green-400">
+            ₹{paidAmount.toLocaleString()}
           </h2>
         </div>
+
+        <div className="bg-slate-900 p-6 rounded-xl">
+          <p className="text-slate-400">
+            Pending Amount
+          </p>
+
+          <h2 className="text-4xl font-bold text-red-400">
+            ₹{pendingAmount.toLocaleString()}
+          </h2>
+        </div>
+
       </div>
-
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Total Revenue
-          </p>
-
-          <h2 className="text-3xl font-bold text-blue-500">
-            ₹{totalRevenue.toLocaleString()}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Collected Revenue
-          </p>
-
-          <h2 className="text-3xl font-bold text-green-500">
-            ₹{collectedRevenue.toLocaleString()}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Outstanding Revenue
-          </p>
-
-          <h2 className="text-3xl font-bold text-red-500">
-            ₹{outstandingRevenue.toLocaleString()}
-          </h2>
-        </div>
-      </div>
-
-      {error && (
-        <div className="bg-red-900/30 border border-red-500 p-4 rounded-lg mb-6">
-          <pre>
-            {JSON.stringify(error, null, 2)}
-          </pre>
-        </div>
-      )}
 
       <div className="bg-slate-900 rounded-xl p-6">
-        <InvoiceTable
-          invoices={enrichedInvoices}
-        />
+
+        <h2 className="text-2xl font-bold mb-6">
+          Invoice List
+        </h2>
+
+        <div className="space-y-4">
+
+          {invoices?.map(
+            (invoice: any) => (
+              <div
+                key={invoice.id}
+                className="bg-slate-800 rounded-lg p-4"
+              >
+                <div className="flex justify-between">
+
+                  <div>
+                    <p className="font-bold text-cyan-400">
+                      {
+                        invoice.customer_name
+                      }
+                    </p>
+
+                    <p>
+                      {
+                        invoice.invoice_number
+                      }
+                    </p>
+
+                    <p className="text-slate-400 text-sm">
+                      {
+                        invoice.invoice_date
+                      }
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+
+                    <p>
+                      Amount: ₹
+                      {Number(
+                        invoice.amount
+                      ).toLocaleString()}
+                    </p>
+
+                    <p>
+                      GST: ₹
+                      {Number(
+                        invoice.gst_amount
+                      ).toLocaleString()}
+                    </p>
+
+                    <p className="font-bold">
+                      Total: ₹
+                      {Number(
+                        invoice.total_amount
+                      ).toLocaleString()}
+                    </p>
+
+                    <p
+                      className={
+                        invoice.status ===
+                        "Paid"
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }
+                    >
+                      {invoice.status}
+                    </p>
+
+                  </div>
+
+                </div>
+              </div>
+            )
+          )}
+
+        </div>
+
       </div>
-    </main>
+    </AppLayout>
   );
 }
