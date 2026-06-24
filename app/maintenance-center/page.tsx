@@ -1,3 +1,4 @@
+import MaintenanceEntryForm from "../components/MaintenanceEntryForm";
 import AppLayout from "../components/AppLayout";
 import { supabase } from "../lib/supabase";
 
@@ -18,7 +19,9 @@ export default async function MaintenanceCenterPage() {
       <h1 className="text-4xl font-bold text-orange-500 mb-8">
         🔧 Maintenance Center
       </h1>
-
+<MaintenanceEntryForm
+  vehicles={vehicles || []}
+/>
       <div className="grid gap-6">
 
         {maintenance?.map((item: any) => {

@@ -3,8 +3,8 @@ import { supabase } from "../lib/supabase";
 
 export default async function MaintenanceAlertsPage() {
   const { data: maintenance } = await supabase
-    .from("vehicle_maintenance")
-    .select("*");
+  .from("maintenance_records")
+  .select("*");
 
   const { data: vehicles } = await supabase
     .from("vehicles")

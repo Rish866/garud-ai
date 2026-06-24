@@ -1,3 +1,4 @@
+import FuelEntryForm from "../components/FuelEntryForm";
 import AppLayout from "../components/AppLayout";
 import { supabase } from "../lib/supabase";
 
@@ -33,12 +34,14 @@ export default async function FuelManagementPage() {
       : 0;
 
   return (
-    <AppLayout>
-      <h1 className="text-4xl font-bold text-green-500 mb-8">
-        ⛽ Fuel Management
-      </h1>
+  <AppLayout>
+    <h1 className="text-4xl font-bold text-green-500 mb-8">
+      ⛽ Fuel Management
+    </h1>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+    <FuelEntryForm vehicles={vehicles || []} />
+
+    <div className="grid md:grid-cols-3 gap-6 mb-8">
 
         <div className="bg-slate-900 p-6 rounded-xl">
           <p className="text-slate-400">

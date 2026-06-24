@@ -1,3 +1,4 @@
+import TyreEntryForm from "../components/TyreEntryForm";
 import AppLayout from "../components/AppLayout";
 import { supabase } from "../lib/supabase";
 
@@ -36,7 +37,7 @@ export default async function TyreManagementPage() {
       <h1 className="text-4xl font-bold text-orange-500 mb-8">
         🛞 Tyre Management
       </h1>
-
+<TyreEntryForm vehicles={vehicles || []} />
       <div className="grid md:grid-cols-3 gap-6 mb-8">
 
         <div className="bg-slate-900 p-6 rounded-xl">
