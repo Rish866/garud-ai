@@ -170,6 +170,12 @@ export default function AppLayout({
           >
             🔧 Maintenance Center
           </a>
+          <a
+  href="/tyre-management"
+  className="block hover:text-blue-400"
+>
+  🛞 Tyre Management
+</a>
 <a
   href="/maintenance-alerts"
   className="block hover:text-blue-400"
