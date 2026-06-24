@@ -170,7 +170,12 @@ export default function AppLayout({
           >
             🔧 Maintenance Center
           </a>
-
+<a
+  href="/maintenance-alerts"
+  className="block hover:text-blue-400"
+>
+  🚨 Maintenance Alerts
+</a>
           <a
             href="/document-center"
             className="block hover:text-blue-400"
@@ -188,7 +193,12 @@ export default function AppLayout({
           <p className="text-slate-500 text-xs uppercase">
             Finance
           </p>
-
+<a
+  href="/fuel-management"
+  className="block hover:text-blue-400"
+>
+  ⛽ Fuel Management
+</a>
           <a
             href="/driver-salary"
             className="block hover:text-blue-400"
