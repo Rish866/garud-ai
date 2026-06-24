@@ -23,9 +23,12 @@ export default function Page() {
           className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 mb-4"
         />
 
-        <button className="w-full bg-blue-600 p-3 rounded-lg font-semibold">
-          Sign In
-        </button>
+        <a
+  href="/dashboard"
+  className="block w-full bg-blue-600 p-3 rounded-lg font-semibold text-center"
+>
+  Enter Dashboard
+</a>
 
         <div className="text-center mt-6">
           <a href="/" className="text-blue-400">
