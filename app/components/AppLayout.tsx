@@ -60,6 +60,18 @@ export default function AppLayout({
 >
   📹 Video Archive
 </a>
+<a
+  href="/video-search"
+  className="block hover:text-blue-400"
+>
+  🔎 Video Search
+</a>
+<a
+  href="/video-requests"
+  className="block hover:text-blue-400"
+>
+  📤 Video Requests
+</a>
           <a
             href="/driver-score"
             className="block hover:text-blue-400"
