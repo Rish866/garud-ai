@@ -54,24 +54,28 @@ export default function AppLayout({
           >
             🎬 Incident Clips
           </a>
-<a
-  href="/video-archive"
-  className="block hover:text-blue-400"
->
-  📹 Video Archive
-</a>
-<a
-  href="/video-search"
-  className="block hover:text-blue-400"
->
-  🔎 Video Search
-</a>
-<a
-  href="/video-requests"
-  className="block hover:text-blue-400"
->
-  📤 Video Requests
-</a>
+
+          <a
+            href="/video-archive"
+            className="block hover:text-blue-400"
+          >
+            📹 Video Archive
+          </a>
+
+          <a
+            href="/video-search"
+            className="block hover:text-blue-400"
+          >
+            🔎 Video Search
+          </a>
+
+          <a
+            href="/video-requests"
+            className="block hover:text-blue-400"
+          >
+            📤 Video Requests
+          </a>
+
           <a
             href="/driver-score"
             className="block hover:text-blue-400"
@@ -154,17 +158,17 @@ export default function AppLayout({
           </p>
 
           <a
-            href="/maintenance"
+            href="/maintenance-center"
             className="block hover:text-blue-400"
           >
-            🔧 Maintenance
+            🔧 Maintenance Center
           </a>
 
           <a
-            href="/alerts"
+            href="/document-center"
             className="block hover:text-blue-400"
           >
-            📄 Document Alerts
+            📄 Document Center
           </a>
 
           <hr className="border-slate-800" />
