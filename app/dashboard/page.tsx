@@ -157,10 +157,12 @@ export default async function DashboardPage() {
           <DashboardAIStatus />
 
           <DashboardFleetHealth
-            totalVehicles={totalVehicles}
-            activeVehicles={activeVehicles}
-            inactiveVehicles={inactiveVehicles}
-          />
+  totalVehicles={totalVehicles}
+  activeVehicles={activeVehicles}
+  totalDrivers={totalDrivers}
+  totalCustomers={totalCustomers}
+  totalTrips={totalTrips}
+/>
 
           <DashboardAlerts alerts={alerts} />
         </section>
