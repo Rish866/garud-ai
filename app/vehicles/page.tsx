@@ -9,21 +9,20 @@ export default async function VehiclesPage() {
 
   return (
     <AppLayout>
-      <h1 className="text-4xl font-bold text-blue-500 mb-8">
-        Vehicles
-      </h1>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-blue-500">Vehicles</h1>
+        <p className="mt-2 text-slate-400">
+          Add, edit, delete and manage fleet vehicles.
+        </p>
+      </div>
 
       {error && (
-        <div className="bg-red-900/30 border border-red-500 p-4 rounded-lg mb-6">
-          <pre>
-            {JSON.stringify(error, null, 2)}
-          </pre>
+        <div className="mb-6 rounded-xl border border-red-500 bg-red-900/30 p-4">
+          <pre>{JSON.stringify(error, null, 2)}</pre>
         </div>
       )}
 
-      <div className="bg-slate-900 rounded-xl p-6">
-        <VehicleTable vehicles={vehicles || []} />
-      </div>
+      <VehicleTable vehicles={vehicles || []} />
     </AppLayout>
   );
 }

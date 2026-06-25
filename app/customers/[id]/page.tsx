@@ -1,301 +1,183 @@
 import Link from "next/link";
+import AppLayout from "../../components/AppLayout";
 import { supabase } from "../../lib/supabase";
 
-export default async function CustomerProfile({
+export default async function CustomerProfilePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const customerId = Number(id);
 
-  const { data: customer } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (!customer) {
+  if (!customerId) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white p-6">
-        <h1 className="text-3xl font-bold text-red-500">
-          Customer Not Found
-        </h1>
-
-        <Link
-          href="/customers"
-          className="text-blue-400"
-        >
-          Back to Customers
-        </Link>
-      </main>
+      <AppLayout>
+        <ErrorCard message="Invalid customer ID." />
+      </AppLayout>
     );
   }
+
+  const { data: customer, error: customerError } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("id", customerId)
+    .maybeSingle();
 
   const { data: trips } = await supabase
     .from("trips")
     .select("*")
-    .eq("customer_id", id);
+    .eq("customer_id", customerId)
+    .order("id", { ascending: false });
 
-  const tripIds =
-    trips?.map((trip) => trip.id) || [];
-
-  let invoices: any[] = [];
-
-  if (tripIds.length > 0) {
-    const { data } = await supabase
-      .from("invoices")
-      .select("*")
-      .in("trip_id", tripIds);
-
-    invoices = data || [];
+  if (customerError || !customer) {
+    return (
+      <AppLayout>
+        <ErrorCard message={`Customer ID ${customerId} not found.`} />
+      </AppLayout>
+    );
   }
 
-  const invoiceIds =
-    invoices.map(
-      (invoice) => invoice.id
-    ) || [];
-
-  let payments: any[] = [];
-
-  if (invoiceIds.length > 0) {
-    const { data } = await supabase
-      .from("payments")
-      .select("*")
-      .in("invoice_id", invoiceIds);
-
-    payments = data || [];
-  }
-
-  const totalInvoiced =
-    invoices.reduce(
-      (sum, invoice) =>
-        sum +
-        Number(invoice.amount || 0),
-      0
-    );
-
-  const totalCollected =
-    payments.reduce(
-      (sum, payment) =>
-        sum +
-        Number(payment.amount || 0),
-      0
-    );
-
-  const outstanding =
-    totalInvoiced -
-    totalCollected;
+  const totalTrips = trips?.length || 0;
+  const completedTrips =
+    trips?.filter((trip) => trip.status === "Completed").length || 0;
+  const tripRevenue =
+    trips?.reduce((sum, trip) => sum + Number(trip.revenue || 0), 0) || 0;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-blue-500">
+    <AppLayout>
+      <div className="space-y-6">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <Link href="/customers" className="text-sm text-blue-400">
+            ← Back to Customers
+          </Link>
+
+          <h1 className="mt-3 text-4xl font-bold text-white">
             {customer.company_name}
           </h1>
 
-          <p className="text-slate-400 mt-2">
-            Customer Ledger
+          <p className="mt-2 text-slate-400">
+            Customer profile, subscription, revenue and trip history.
           </p>
-        </div>
+        </section>
 
-        <Link
-          href="/customers"
-          className="bg-slate-800 px-4 py-2 rounded"
-        >
-          Back
-        </Link>
+        <section className="grid gap-6 md:grid-cols-4">
+          <StatCard title="Plan" value={customer.plan || "-"} />
+          <StatCard title="Vehicles" value={customer.vehicles || 0} />
+          <StatCard
+            title="Monthly Revenue"
+            value={`₹${Number(customer.monthly_revenue || 0).toLocaleString()}`}
+            color="text-green-400"
+          />
+          <StatCard title="Trips" value={totalTrips} color="text-blue-400" />
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 xl:col-span-2">
+            <h2 className="text-2xl font-bold">Customer Overview</h2>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <Info label="Database ID" value={customer.id} />
+              <Info label="Company Name" value={customer.company_name || "-"} />
+              <Info label="Plan" value={customer.plan || "-"} />
+              <Info label="Vehicles" value={customer.vehicles || 0} />
+              <Info
+                label="Monthly Revenue"
+                value={`₹${Number(customer.monthly_revenue || 0).toLocaleString()}`}
+              />
+              <Info label="Status" value={customer.status || "-"} />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="text-2xl font-bold">Quick Actions</h2>
+
+            <div className="mt-6 space-y-3">
+              <Link
+                href="/trips"
+                className="block rounded-xl bg-blue-600 px-5 py-3 text-center font-semibold hover:bg-blue-500"
+              >
+                Manage Trips
+              </Link>
+
+              <Link
+                href="/invoices"
+                className="block rounded-xl border border-slate-700 px-5 py-3 text-center font-semibold hover:bg-slate-800"
+              >
+                View Invoices
+              </Link>
+
+              <Link
+                href="/receivables"
+                className="block rounded-xl border border-slate-700 px-5 py-3 text-center font-semibold hover:bg-slate-800"
+              >
+                View Receivables
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-2xl font-bold">Trip Summary</h2>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <Info label="Total Trips" value={totalTrips} />
+            <Info label="Completed Trips" value={completedTrips} />
+            <Info
+              label="Trip Revenue"
+              value={`₹${tripRevenue.toLocaleString()}`}
+            />
+          </div>
+        </section>
       </div>
+    </AppLayout>
+  );
+}
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Total Invoiced
-          </p>
+function ErrorCard({ message }: { message: string }) {
+  return (
+    <div className="rounded-2xl border border-red-500 bg-red-900/30 p-6">
+      <h1 className="text-2xl font-bold text-red-400">Customer not found</h1>
+      <p className="mt-2 text-slate-300">{message}</p>
 
-          <h2 className="text-3xl font-bold text-blue-500">
-            ₹{totalInvoiced.toLocaleString()}
-          </h2>
-        </div>
+      <Link
+        href="/customers"
+        className="mt-5 inline-block rounded-xl bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-500"
+      >
+        Back to Customers
+      </Link>
+    </div>
+  );
+}
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Total Collected
-          </p>
+function StatCard({
+  title,
+  value,
+  color = "text-white",
+}: {
+  title: string;
+  value: string | number;
+  color?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <p className="text-sm text-slate-400">{title}</p>
+      <h2 className={`mt-3 text-3xl font-black ${color}`}>{value}</h2>
+    </div>
+  );
+}
 
-          <h2 className="text-3xl font-bold text-green-500">
-            ₹{totalCollected.toLocaleString()}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Outstanding
-          </p>
-
-          <h2 className="text-3xl font-bold text-red-500">
-            ₹{outstanding.toLocaleString()}
-          </h2>
-        </div>
-      </div>
-
-      <div className="bg-slate-900 rounded-xl p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-4">
-          Company Information
-        </h2>
-
-        <div className="space-y-2">
-          <p>
-            <strong>Company:</strong>{" "}
-            {customer.company_name}
-          </p>
-
-          <p>
-            <strong>Plan:</strong>{" "}
-            {customer.plan}
-          </p>
-
-          <p>
-            <strong>Fleet Size:</strong>{" "}
-            {customer.vehicles}
-          </p>
-
-          <p>
-            <strong>Status:</strong>{" "}
-            {customer.status}
-          </p>
-
-          <p>
-            <strong>Monthly Revenue:</strong>{" "}
-            ₹
-            {Number(
-              customer.monthly_revenue
-            ).toLocaleString()}
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-slate-900 rounded-xl p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-4">
-          Customer Invoices
-        </h2>
-
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left py-3">
-                Invoice
-              </th>
-
-              <th className="text-left py-3">
-                Amount
-              </th>
-
-              <th className="text-left py-3">
-                Status
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {invoices.map(
-              (invoice: any) => (
-                <tr
-                  key={invoice.id}
-                  className="border-b border-slate-800"
-                >
-                  <td className="py-3">
-                    {invoice.invoice_number}
-                  </td>
-
-                  <td>
-                    ₹
-                    {Number(
-                      invoice.amount
-                    ).toLocaleString()}
-                  </td>
-
-                  <td>
-                    {invoice.status}
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
-
-        {invoices.length === 0 && (
-          <p className="text-yellow-400 mt-4">
-            No invoices found.
-          </p>
-        )}
-      </div>
-
-      <div className="bg-slate-900 rounded-xl p-6">
-        <h2 className="text-2xl font-bold mb-4">
-          Payment History
-        </h2>
-
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left py-3">
-                Date
-              </th>
-
-              <th className="text-left py-3">
-                Amount
-              </th>
-
-              <th className="text-left py-3">
-                Method
-              </th>
-
-              <th className="text-left py-3">
-                UTR
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {payments.map(
-              (payment: any) => (
-                <tr
-                  key={payment.id}
-                  className="border-b border-slate-800"
-                >
-                  <td className="py-3">
-                    {payment.payment_date}
-                  </td>
-
-                  <td className="text-green-500">
-                    ₹
-                    {Number(
-                      payment.amount
-                    ).toLocaleString()}
-                  </td>
-
-                  <td>
-                    {payment.payment_method ||
-                      "-"}
-                  </td>
-
-                  <td>
-                    {payment.utr_number ||
-                      "-"}
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
-
-        {payments.length === 0 && (
-          <p className="text-yellow-400 mt-4">
-            No payments found.
-          </p>
-        )}
-      </div>
-    </main>
+function Info({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+      <p className="text-sm text-slate-500">{label}</p>
+      <p className="mt-2 font-semibold text-white">{value}</p>
+    </div>
   );
 }

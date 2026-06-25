@@ -1,199 +1,288 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 
-export default function VehicleTable({
-  vehicles,
-}: {
-  vehicles: any[];
-}) {
-  const router = useRouter();
+type Vehicle = {
+  id: number;
+  vehicle_number: string;
+  driver_name?: string | null;
+  make?: string | null;
+  model?: string | null;
+  status?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
 
-  const [editingId, setEditingId] = useState<number | null>(
-    null
-  );
+export default function VehicleTable({ vehicles }: { vehicles: Vehicle[] }) {
+  const [rows, setRows] = useState<Vehicle[]>(vehicles);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [vehicleNumber, setVehicleNumber] = useState("");
-  const [driverName, setDriverName] = useState("");
-  const [status, setStatus] = useState("");
+  const [form, setForm] = useState({
+    vehicle_number: "",
+    driver_name: "",
+    make: "",
+    model: "",
+    status: "Active",
+    latitude: "",
+    longitude: "",
+  });
 
-  const startEdit = (vehicle: any) => {
-    setEditingId(vehicle.id);
-    setVehicleNumber(vehicle.vehicle_number);
-    setDriverName(vehicle.driver_name);
-    setStatus(vehicle.status);
-  };
-
-  const saveEdit = async () => {
-    const { error } = await supabase
-      .from("vehicles")
-      .update({
-        vehicle_number: vehicleNumber,
-        driver_name: driverName,
-        status,
-      })
-      .eq("id", editingId);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
+  function resetForm() {
     setEditingId(null);
-    router.refresh();
-  };
+    setForm({
+      vehicle_number: "",
+      driver_name: "",
+      make: "",
+      model: "",
+      status: "Active",
+      latitude: "",
+      longitude: "",
+    });
+  }
 
-  const deleteVehicle = async (id: number) => {
-    const confirmDelete = confirm(
-      "Delete this vehicle?"
-    );
+  function editVehicle(vehicle: Vehicle) {
+    setEditingId(vehicle.id);
+    setForm({
+      vehicle_number: vehicle.vehicle_number || "",
+      driver_name: vehicle.driver_name || "",
+      make: vehicle.make || "",
+      model: vehicle.model || "",
+      status: vehicle.status || "Active",
+      latitude: vehicle.latitude?.toString() || "",
+      longitude: vehicle.longitude?.toString() || "",
+    });
+  }
 
-    if (!confirmDelete) return;
+  async function saveVehicle() {
+    if (!form.vehicle_number.trim()) {
+      alert("Vehicle number is required");
+      return;
+    }
 
-    const { error } = await supabase
+    const payload = {
+      vehicle_number: form.vehicle_number.trim(),
+      driver_name: form.driver_name.trim() || null,
+      make: form.make.trim() || null,
+      model: form.model.trim() || null,
+      status: form.status,
+      latitude: form.latitude ? Number(form.latitude) : null,
+      longitude: form.longitude ? Number(form.longitude) : null,
+    };
+
+    if (editingId) {
+      const { data, error } = await supabase
+        .from("vehicles")
+        .update(payload)
+        .eq("id", editingId)
+        .select()
+        .single();
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      setRows(rows.map((row) => (row.id === editingId ? data : row)));
+      resetForm();
+      return;
+    }
+
+    const { data, error } = await supabase
       .from("vehicles")
-      .delete()
-      .eq("id", id);
+      .insert(payload)
+      .select()
+      .single();
 
     if (error) {
       alert(error.message);
       return;
     }
 
-    router.refresh();
-  };
+    setRows([data, ...rows]);
+    resetForm();
+  }
+
+  async function deleteVehicle(id: number) {
+    if (!confirm("Delete this vehicle?")) return;
+
+    const { error } = await supabase.from("vehicles").delete().eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setRows(rows.filter((row) => row.id !== id));
+  }
 
   return (
-    <table className="w-full">
-      <thead>
-        <tr className="border-b border-slate-700">
-          <th className="text-left py-3">
-            Vehicle Number
-          </th>
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <h2 className="mb-4 text-xl font-bold">
+          {editingId ? "Edit Vehicle" : "Add Vehicle"}
+        </h2>
 
-          <th className="text-left py-3">
-            Driver
-          </th>
+        <div className="grid gap-4 md:grid-cols-3">
+          <input
+            value={form.vehicle_number}
+            onChange={(e) =>
+              setForm({ ...form, vehicle_number: e.target.value })
+            }
+            placeholder="Vehicle Number"
+            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+          />
 
-          <th className="text-left py-3">
-            Status
-          </th>
+          <input
+            value={form.driver_name}
+            onChange={(e) => setForm({ ...form, driver_name: e.target.value })}
+            placeholder="Driver Name"
+            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+          />
 
-          <th className="text-left py-3">
-            Actions
-          </th>
-        </tr>
-      </thead>
+          <input
+            value={form.make}
+            onChange={(e) => setForm({ ...form, make: e.target.value })}
+            placeholder="Make"
+            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+          />
 
-      <tbody>
-        {vehicles.map((vehicle) => (
-          <tr
-            key={vehicle.id}
-            className="border-b border-slate-800"
+          <input
+            value={form.model}
+            onChange={(e) => setForm({ ...form, model: e.target.value })}
+            placeholder="Model"
+            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+          />
+
+          <select
+            value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
           >
-            <td className="py-4">
-              {editingId === vehicle.id ? (
-                <input
-                  value={vehicleNumber}
-                  onChange={(e) =>
-                    setVehicleNumber(
-                      e.target.value
-                    )
-                  }
-                  className="bg-slate-800 p-2 rounded"
-                />
-              ) : (
-                vehicle.vehicle_number
-              )}
-            </td>
+            <option>Active</option>
+            <option>Idle</option>
+            <option>Maintenance</option>
+            <option>Offline</option>
+          </select>
 
-            <td>
-              {editingId === vehicle.id ? (
-                <input
-                  value={driverName}
-                  onChange={(e) =>
-                    setDriverName(
-                      e.target.value
-                    )
-                  }
-                  className="bg-slate-800 p-2 rounded"
-                />
-              ) : (
-                vehicle.driver_name
-              )}
-            </td>
+          <input
+            value={form.latitude}
+            onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+            placeholder="Latitude"
+            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+          />
 
-            <td>
-              {editingId === vehicle.id ? (
-                <select
-                  value={status}
-                  onChange={(e) =>
-                    setStatus(
-                      e.target.value
-                    )
-                  }
-                  className="bg-slate-800 p-2 rounded"
-                >
-                  <option>
-                    Online
-                  </option>
-                  <option>
-                    Offline
-                  </option>
-                </select>
-              ) : (
-                vehicle.status
-              )}
-            </td>
+          <input
+            value={form.longitude}
+            onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+            placeholder="Longitude"
+            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+          />
+        </div>
 
-            <td className="space-x-2">
-              {editingId === vehicle.id ? (
-                <>
-                  <button
-                    onClick={saveEdit}
-                    className="bg-green-600 px-3 py-1 rounded"
+        <div className="mt-5 flex gap-3">
+          <button
+            onClick={saveVehicle}
+            className="rounded-xl bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-500"
+          >
+            {editingId ? "Update Vehicle" : "Add Vehicle"}
+          </button>
+
+          {editingId && (
+            <button
+              onClick={resetForm}
+              className="rounded-xl border border-slate-700 px-5 py-3 font-semibold hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900">
+        <table className="w-full min-w-[1000px] text-left text-sm">
+          <thead className="bg-slate-950 text-slate-400">
+            <tr>
+              <th className="p-4">Vehicle</th>
+              <th className="p-4">Driver</th>
+              <th className="p-4">Make</th>
+              <th className="p-4">Model</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">GPS</th>
+              <th className="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.map((vehicle) => (
+              <tr
+                key={vehicle.id}
+                className="border-t border-slate-800 hover:bg-slate-800/40"
+              >
+                <td className="p-4 font-bold">
+                  <Link
+                    href={`/vehicles/${vehicle.id}`}
+                    className="text-blue-400 hover:underline"
                   >
-                    Save
-                  </button>
+                    {vehicle.vehicle_number}
+                  </Link>
+                </td>
 
-                  <button
-                    onClick={() =>
-                      setEditingId(null)
-                    }
-                    className="bg-gray-600 px-3 py-1 rounded"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() =>
-                      startEdit(vehicle)
-                    }
-                    className="bg-blue-600 px-3 py-1 rounded"
-                  >
-                    Edit
-                  </button>
+                <td className="p-4 text-slate-300">
+                  {vehicle.driver_name || "-"}
+                </td>
 
-                  <button
-                    onClick={() =>
-                      deleteVehicle(
-                        vehicle.id
-                      )
-                    }
-                    className="bg-red-600 px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+                <td className="p-4 text-slate-300">{vehicle.make || "-"}</td>
+                <td className="p-4 text-slate-300">{vehicle.model || "-"}</td>
+
+                <td className="p-4">
+                  <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
+                    {vehicle.status || "Active"}
+                  </span>
+                </td>
+
+                <td className="p-4 text-slate-300">
+                  {vehicle.latitude && vehicle.longitude ? "Available" : "-"}
+                </td>
+
+                <td className="p-4">
+                  <div className="flex justify-end gap-2">
+                    <Link
+                      href={`/vehicles/${vehicle.id}`}
+                      className="rounded-lg bg-blue-500/10 px-3 py-2 text-blue-400 hover:bg-blue-500/20"
+                    >
+                      View
+                    </Link>
+
+                    <button
+                      onClick={() => editVehicle(vehicle)}
+                      className="rounded-lg bg-yellow-500/10 px-3 py-2 text-yellow-400 hover:bg-yellow-500/20"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => deleteVehicle(vehicle.id)}
+                      className="rounded-lg bg-red-500/10 px-3 py-2 text-red-400 hover:bg-red-500/20"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={7} className="p-8 text-center text-slate-400">
+                  No vehicles found. Add your first vehicle.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

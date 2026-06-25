@@ -1,358 +1,178 @@
 import AppLayout from "../components/AppLayout";
 import { supabase } from "../lib/supabase";
 
+import DashboardCard from "../components/DashboardCard";
+import DashboardQuickActions from "../components/DashboardQuickActions";
+import DashboardAlerts from "../components/DashboardAlerts";
+import DashboardRecentTrips from "../components/DashboardRecentTrips";
+import DashboardFleetHealth from "../components/DashboardFleetHealth";
+import DashboardRevenue from "../components/DashboardRevenue";
+import DashboardAIStatus from "../components/DashboardAIStatus";
+import DashboardCameraEvents from "../components/DashboardCameraEvents";
+import DashboardLiveMap from "../components/DashboardLiveMap";
+
 export default async function DashboardPage() {
-  const { data: vehicles } =
-    await supabase
-      .from("vehicles")
-      .select("*");
+  const { data: vehicles } = await supabase.from("vehicles").select("*");
+  const { data: drivers } = await supabase.from("drivers").select("*");
+  const { data: customers } = await supabase.from("customers").select("*");
 
-  const { data: drivers } =
-    await supabase
-      .from("drivers")
-      .select("*");
+  const { data: trips } = await supabase
+    .from("trips")
+    .select(
+      `
+      *,
+      customers(company_name),
+      vehicles(vehicle_number),
+      drivers(name)
+    `
+    )
+    .order("id", { ascending: false });
 
-  const { data: customers } =
-    await supabase
-      .from("customers")
-      .select("*");
+  const totalVehicles = vehicles?.length || 0;
+  const totalDrivers = drivers?.length || 0;
+  const totalCustomers = customers?.length || 0;
+  const totalTrips = trips?.length || 0;
 
-  const { data: trips } =
-    await supabase
-      .from("trips")
-      .select(`
-        *,
-        customers(
-          company_name
-        )
-      `)
-      .order("id", {
-        ascending: false,
-      });
+  const activeVehicles =
+    vehicles?.filter((vehicle) => vehicle.status === "Active").length || 0;
 
-  const { data: profitability } =
-    await supabase
-      .from("trip_profitability")
-      .select("*");
-
-  const { data: salaries } =
-    await supabase
-      .from("driver_salary")
-      .select("*");
-
-  const { data: invoices } =
-    await supabase
-      .from("invoices")
-      .select("*");
-
-  const { data: payments } =
-    await supabase
-      .from("payments")
-      .select("*");
-
-  const totalVehicles =
-    vehicles?.length || 0;
-
-  const totalDrivers =
-    drivers?.length || 0;
-
-  const totalCustomers =
-    customers?.length || 0;
-
-  const totalTrips =
-    trips?.length || 0;
-
-  const activeTrips =
-    trips?.filter(
-      (trip: any) =>
-        trip.status ===
-        "In Progress"
-    ).length || 0;
+  const inactiveVehicles =
+    vehicles?.filter((vehicle) => vehicle.status !== "Active").length || 0;
 
   const completedTrips =
-    trips?.filter(
-      (trip: any) =>
-        trip.status ===
-        "Completed"
-    ).length || 0;
+    trips?.filter((trip) => trip.status === "Completed").length || 0;
+
+  const inProgressTrips =
+    trips?.filter((trip) => trip.status === "In Progress").length || 0;
+
+  const pendingTrips =
+    trips?.filter((trip) => trip.status === "Pending").length || 0;
 
   const totalRevenue =
-    trips?.reduce(
-      (
-        sum: number,
-        trip: any
-      ) =>
-        sum +
-        Number(
-          trip.revenue || 0
-        ),
-      0
-    ) || 0;
+    trips?.reduce((sum, trip) => {
+      return sum + Number(trip.revenue || 0);
+    }, 0) || 0;
 
-  const totalTripExpenses =
-    profitability?.reduce(
-      (
-        sum: number,
-        trip: any
-      ) =>
-        sum +
-        Number(
-          trip.total_expenses || 0
-        ),
-      0
-    ) || 0;
+  const recentTrips = trips?.slice(0, 5) || [];
 
-  const totalDriverSalary =
-    salaries?.reduce(
-      (
-        sum: number,
-        row: any
-      ) =>
-        sum +
-        Number(
-          row.salary || 0
-        ),
-      0
-    ) || 0;
+  const alerts = [
+    {
+      title: "AI Fatigue Alert",
+      message: "Driver attention monitoring is active.",
+      type: "warning",
+    },
+    {
+      title: "Fleet Sync",
+      message: "Live vehicle tracking is connected.",
+      type: "success",
+    },
+    {
+      title: "Trip Monitoring",
+      message: `${inProgressTrips} trip currently in progress.`,
+      type: "info",
+    },
+  ];
 
-  const totalInvoices =
-    invoices?.reduce(
-      (
-        sum: number,
-        invoice: any
-      ) =>
-        sum +
-        Number(
-          invoice.amount || 0
-        ),
-      0
-    ) || 0;
-
-  const totalPayments =
-    payments?.reduce(
-      (
-        sum: number,
-        payment: any
-      ) =>
-        sum +
-        Number(
-          payment.amount || 0
-        ),
-      0
-    ) || 0;
-
-  const outstandingReceivables =
-    totalInvoices -
-    totalPayments;
-
-  const totalExpenses =
-    totalTripExpenses +
-    totalDriverSalary;
-
-  const totalProfit =
-    totalRevenue -
-    totalExpenses;
-
-  const profitMargin =
-    totalRevenue > 0
-      ? (
-          (totalProfit /
-            totalRevenue) *
-          100
-        ).toFixed(1)
-      : "0";
+  const cameraEvents = [
+    {
+      id: 1,
+      vehicle: "MH04XY5678",
+      driver: "Rajesh",
+      event: "Driver Fatigue Detected",
+      severity: "High" as const,
+      time: "10 mins ago",
+    },
+    {
+      id: 2,
+      vehicle: "MH12PQ7890",
+      driver: "Amit",
+      event: "Mobile Phone Usage",
+      severity: "Medium" as const,
+      time: "25 mins ago",
+    },
+    {
+      id: 3,
+      vehicle: "MH04XY5678",
+      driver: "Rajesh",
+      event: "Harsh Braking",
+      severity: "Low" as const,
+      time: "1 hour ago",
+    },
+  ];
 
   return (
     <AppLayout>
-      <h1 className="text-4xl font-bold text-blue-500 mb-8">
-        Dashboard
-      </h1>
-
-      <div className="grid md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Vehicles
+      <main className="min-h-screen bg-slate-950 p-6 text-white">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">GARUD AI Dashboard</h1>
+          <p className="mt-2 text-slate-400">
+            Monitor fleet activity, driver safety, revenue, and AI alerts.
           </p>
-
-          <h2 className="text-3xl font-bold">
-            {totalVehicles}
-          </h2>
         </div>
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Drivers
-          </p>
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <DashboardCard
+            title="Total Vehicles"
+            value={totalVehicles}
+            subtitle={`${activeVehicles} active / ${inactiveVehicles} inactive`}
+          />
 
-          <h2 className="text-3xl font-bold">
-            {totalDrivers}
-          </h2>
-        </div>
+          <DashboardCard
+            title="Total Drivers"
+            value={totalDrivers}
+            subtitle="Registered drivers"
+          />
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Customers
-          </p>
+          <DashboardCard
+            title="Customers"
+            value={totalCustomers}
+            subtitle="Fleet customers"
+          />
 
-          <h2 className="text-3xl font-bold">
-            {totalCustomers}
-          </h2>
-        </div>
+          <DashboardCard
+            title="Trips"
+            value={totalTrips}
+            subtitle={`${completedTrips} completed / ${pendingTrips} pending`}
+          />
+        </section>
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Trips
-          </p>
+        <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <div className="xl:col-span-2">
+            <DashboardRevenue
+              totalRevenue={totalRevenue}
+              completedTrips={completedTrips}
+              inProgressTrips={inProgressTrips}
+              pendingTrips={pendingTrips}
+            />
+          </div>
 
-          <h2 className="text-3xl font-bold">
-            {totalTrips}
-          </h2>
-        </div>
-      </div>
+          <DashboardQuickActions />
+        </section>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Active Trips
-          </p>
+        <section className="mt-8">
+          <DashboardLiveMap vehicles={vehicles || []} />
+        </section>
 
-          <h2 className="text-3xl font-bold text-yellow-500">
-            {activeTrips}
-          </h2>
-        </div>
+        <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <DashboardAIStatus />
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Completed Trips
-          </p>
+          <DashboardFleetHealth
+            totalVehicles={totalVehicles}
+            activeVehicles={activeVehicles}
+            inactiveVehicles={inactiveVehicles}
+          />
 
-          <h2 className="text-3xl font-bold text-green-500">
-            {completedTrips}
-          </h2>
-        </div>
+          <DashboardAlerts alerts={alerts} />
+        </section>
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Total Revenue
-          </p>
+        <section className="mt-8">
+          <DashboardCameraEvents events={cameraEvents} />
+        </section>
 
-          <h2 className="text-3xl font-bold text-blue-500">
-            ₹
-            {totalRevenue.toLocaleString()}
-          </h2>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-5 gap-6 mb-6">
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Trip Expenses
-          </p>
-
-          <h2 className="text-3xl font-bold text-red-500">
-            ₹
-            {totalTripExpenses.toLocaleString()}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Driver Salary
-          </p>
-
-          <h2 className="text-3xl font-bold text-orange-500">
-            ₹
-            {totalDriverSalary.toLocaleString()}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Receivables
-          </p>
-
-          <h2 className="text-3xl font-bold text-cyan-500">
-            ₹
-            {outstandingReceivables.toLocaleString()}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Net Profit
-          </p>
-
-          <h2
-            className={`text-3xl font-bold ${
-              totalProfit >= 0
-                ? "text-green-500"
-                : "text-red-500"
-            }`}
-          >
-            ₹
-            {totalProfit.toLocaleString()}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Profit Margin
-          </p>
-
-          <h2 className="text-3xl font-bold text-yellow-500">
-            {profitMargin}%
-          </h2>
-        </div>
-      </div>
-
-      <div className="bg-slate-900 rounded-xl p-6">
-        <h2 className="text-2xl font-bold mb-6">
-          Recent Trips
-        </h2>
-
-        <div className="space-y-4">
-          {trips?.slice(0, 5).map(
-            (trip: any) => (
-              <div
-                key={trip.id}
-                className="flex justify-between items-center border-b border-slate-800 pb-3"
-              >
-                <div>
-                  <p className="font-semibold">
-                    {trip.customers
-                      ?.company_name ||
-                      "Unknown Customer"}
-                  </p>
-
-                  <p className="text-slate-400 text-sm">
-                    {trip.origin} →{" "}
-                    {trip.destination}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <p className="font-semibold text-green-500">
-                    ₹
-                    {Number(
-                      trip.revenue
-                    ).toLocaleString()}
-                  </p>
-
-                  <p className="text-sm text-slate-400">
-                    {trip.status}
-                  </p>
-                </div>
-              </div>
-            )
-          )}
-
-          {trips?.length === 0 && (
-            <p className="text-yellow-400">
-              No trips found.
-            </p>
-          )}
-        </div>
-      </div>
+        <section className="mt-8">
+          <DashboardRecentTrips trips={recentTrips} />
+        </section>
+      </main>
     </AppLayout>
   );
 }

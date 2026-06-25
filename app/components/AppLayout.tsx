@@ -1,3 +1,64 @@
+import Image from "next/image";
+import Link from "next/link";
+
+const navSections = [
+  {
+    title: "Core",
+    items: [
+      { name: "Dashboard", href: "/dashboard", icon: "📊" },
+      { name: "Live Fleet", href: "/fleet-map", icon: "🗺️" },
+      { name: "Live Monitoring", href: "/live", icon: "🎥" },
+    ],
+  },
+  {
+    title: "AI Safety",
+    items: [
+      { name: "Safety Command Center", href: "/safety-center", icon: "🖥️" },
+      { name: "Safety Events", href: "/safety-events", icon: "🚨" },
+      { name: "Incident Clips", href: "/incidentclips", icon: "🎬" },
+      { name: "Video Archive", href: "/video-archive", icon: "📹" },
+      { name: "Video Search", href: "/video-search", icon: "🔎" },
+      { name: "Video Requests", href: "/video-requests", icon: "📤" },
+      { name: "Driver Safety Score", href: "/driver-score", icon: "🏆" },
+      { name: "Violation History", href: "/violation-history", icon: "⚠️" },
+      { name: "AI Risk Engine", href: "/risk-engine", icon: "🧠" },
+      { name: "Top Risk Vehicles", href: "/vehicle-risk", icon: "🚗" },
+    ],
+  },
+  {
+    title: "Fleet ERP",
+    items: [
+      { name: "Vehicles", href: "/vehicles", icon: "🚛" },
+      { name: "Drivers", href: "/drivers", icon: "👨‍✈️" },
+      { name: "Customers", href: "/customers", icon: "👥" },
+      { name: "Trips", href: "/trips", icon: "🛣️" },
+      { name: "Trip Expenses", href: "/trip-expenses", icon: "💸" },
+    ],
+  },
+  {
+    title: "Compliance",
+    items: [
+      { name: "Maintenance Center", href: "/maintenance-center", icon: "🔧" },
+      { name: "Tyre Management", href: "/tyre-management", icon: "🛞" },
+      { name: "Maintenance Alerts", href: "/maintenance-alerts", icon: "🚨" },
+      { name: "Document Center", href: "/document-center", icon: "📄" },
+      { name: "Document Alerts", href: "/document-alerts", icon: "🚨" },
+    ],
+  },
+  {
+    title: "Finance",
+    items: [
+      { name: "Fuel Management", href: "/fuel-management", icon: "⛽" },
+      { name: "Driver Salary", href: "/driver-salary", icon: "👨‍✈️" },
+      { name: "Invoices", href: "/invoices", icon: "🧾" },
+      { name: "Payments", href: "/payments", icon: "💳" },
+      { name: "Receivables", href: "/receivables", icon: "📥" },
+      { name: "Vehicle Profitability", href: "/profitability", icon: "📈" },
+      { name: "Billing", href: "/billing", icon: "💰" },
+    ],
+  },
+];
+
 export default function AppLayout({
   children,
 }: {
@@ -5,278 +66,79 @@ export default function AppLayout({
 }) {
   return (
     <div className="flex min-h-screen bg-slate-950 text-white">
+      <aside className="sticky top-0 hidden h-screen w-80 shrink-0 overflow-y-auto border-r border-slate-800 bg-slate-900/95 xl:block">
+        <div className="border-b border-slate-800 p-6">
+          <Link href="/dashboard" className="flex items-center gap-4">
+            <div className="relative h-16 w-16 overflow-hidden rounded-2xl bg-slate-800">
+              <Image
+                src="/logo.png"
+                alt="GARUD AI"
+                fill
+                sizes="64px"
+                className="object-contain p-1"
+                priority
+              />
+            </div>
 
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 p-6 overflow-y-auto">
-
-        <h1 className="text-2xl font-bold text-blue-500 mb-8">
-          GARUD AI
-        </h1>
-
-        <nav className="space-y-4">
-
-          <a
-            href="/dashboard"
-            className="block hover:text-blue-400"
-          >
-            📊 Dashboard
-          </a>
-
-          <hr className="border-slate-800" />
-
-          <p className="text-slate-500 text-xs uppercase">
-            AI Safety
-          </p>
-
-          <a
-            href="/safety-center"
-            className="block hover:text-blue-400"
-          >
-            🖥️ Safety Command Center
-          </a>
-
-          <a
-            href="/live"
-            className="block hover:text-blue-400"
-          >
-            🎥 Live Monitoring
-          </a>
-
-          <a
-            href="/safety-events"
-            className="block hover:text-blue-400"
-          >
-            🚨 Safety Events
-          </a>
-
-          <a
-            href="/incidentclips"
-            className="block hover:text-blue-400"
-          >
-            🎬 Incident Clips
-          </a>
-
-          <a
-            href="/video-archive"
-            className="block hover:text-blue-400"
-          >
-            📹 Video Archive
-          </a>
-
-          <a
-            href="/video-search"
-            className="block hover:text-blue-400"
-          >
-            🔎 Video Search
-          </a>
-
-          <a
-            href="/video-requests"
-            className="block hover:text-blue-400"
-          >
-            📤 Video Requests
-          </a>
-
-          <a
-            href="/driver-score"
-            className="block hover:text-blue-400"
-          >
-            🏆 Driver Safety Score
-          </a>
-
-          <a
-            href="/violation-history"
-            className="block hover:text-blue-400"
-          >
-            ⚠️ Violation History
-          </a>
-
-          <a
-            href="/risk-engine"
-            className="block hover:text-blue-400"
-          >
-            🧠 AI Risk Engine
-          </a>
-
-          <a
-            href="/vehicle-risk"
-            className="block hover:text-blue-400"
-          >
-            🚗 Top Risk Vehicles
-          </a>
-
-          <hr className="border-slate-800" />
-
-          <p className="text-slate-500 text-xs uppercase">
-            Fleet
-          </p>
-
-          <a
-  href="/vehicles"
-  className="block hover:text-blue-400"
->
-  🚛 Vehicles
-</a>
-
-<a
-  href="/fleet-map"
-  className="block hover:text-blue-400"
->
-  🗺 Fleet GPS Map
-</a>
-
-<a
-  href="/drivers"
-  className="block hover:text-blue-400"
->
-  👨‍✈️ Drivers
-</a>
-
-          <a
-            href="/customers"
-            className="block hover:text-blue-400"
-          >
-            👥 Customers
-          </a>
-
-          <hr className="border-slate-800" />
-
-          <p className="text-slate-500 text-xs uppercase">
-            Operations
-          </p>
-
-          <a
-            href="/trips"
-            className="block hover:text-blue-400"
-          >
-            🛣️ Trips
-          </a>
-
-          <a
-            href="/trip-expenses"
-            className="block hover:text-blue-400"
-          >
-            💸 Trip Expenses
-          </a>
-
-          <hr className="border-slate-800" />
-
-          <p className="text-slate-500 text-xs uppercase">
-            Compliance
-          </p>
-
-          <a
-            href="/maintenance-center"
-            className="block hover:text-blue-400"
-          >
-            🔧 Maintenance Center
-          </a>
-          <a
-  href="/tyre-management"
-  className="block hover:text-blue-400"
->
-  🛞 Tyre Management
-</a>
-<a
-  href="/maintenance-alerts"
-  className="block hover:text-blue-400"
->
-  🚨 Maintenance Alerts
-</a>
-          <a
-            href="/document-center"
-            className="block hover:text-blue-400"
-          >
-            📄 Document Center
-          </a>
-<a
-  href="/document-alerts"
-  className="block hover:text-blue-400"
->
-  🚨 Document Alerts
-</a>
-          <hr className="border-slate-800" />
-
-          <p className="text-slate-500 text-xs uppercase">
-            Finance
-          </p>
-<a
-  href="/fuel-management"
-  className="block hover:text-blue-400"
->
-  ⛽ Fuel Management
-</a>
-          <a
-            href="/driver-salary"
-            className="block hover:text-blue-400"
-          >
-            👨‍✈️ Driver Salary
-          </a>
-
-          <a
-            href="/invoices"
-            className="block hover:text-blue-400"
-          >
-            🧾 Invoices
-          </a>
-
-          <a
-            href="/payments"
-            className="block hover:text-blue-400"
-          >
-            💳 Payments
-          </a>
-
-          <a
-            href="/receivables"
-            className="block hover:text-blue-400"
-          >
-            📥 Receivables
-          </a>
-
-          <a
-            href="/profitability"
-            className="block hover:text-blue-400"
-          >
-            📈 Vehicle Profitability
-          </a>
-
-          <a
-            href="/billing"
-            className="block hover:text-blue-400"
-          >
-            💰 Billing
-          </a>
-
-        </nav>
-
-      </aside>
-
-      <div className="flex-1">
-
-        <header className="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between">
-
-          <div>
-            AI Dashcam Fleet Platform
-          </div>
-
-          <div className="flex gap-4">
-            <span>
-              🚨 Safety Monitoring
-            </span>
-
-            <span>
-              👤 Admin
-            </span>
-          </div>
-
-        </header>
-
-        <div className="p-6">
-          {children}
+            <div>
+              <h1 className="text-2xl font-black tracking-tight text-white">
+                GARUD AI
+              </h1>
+              <p className="text-sm text-slate-400">
+                Fleet Intelligence SaaS
+              </p>
+            </div>
+          </Link>
         </div>
 
-      </div>
+        <nav className="space-y-6 p-5">
+          {navSections.map((section) => (
+            <div key={section.title}>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
+                {section.title}
+              </p>
 
+              <div className="space-y-1">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                  >
+                    <span className="text-base">{item.icon}</span>
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 px-6 py-4 backdrop-blur">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold">Fleet Operations Center</h2>
+              <p className="text-sm text-slate-400">
+                AI Dashcam Monitoring + GPS + Transport ERP
+              </p>
+            </div>
+
+            <div className="hidden items-center gap-3 md:flex">
+              <div className="rounded-full bg-green-500/10 px-4 py-2 text-sm font-medium text-green-400">
+                ● System Online
+              </div>
+
+              <div className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300">
+                👤 Admin
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
     </div>
   );
 }
