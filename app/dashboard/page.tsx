@@ -55,23 +55,27 @@ export default async function DashboardPage() {
 
   const recentTrips = trips?.slice(0, 5) || [];
 
-  const alerts = [
-    {
-      title: "AI Fatigue Alert",
-      message: "Driver attention monitoring is active.",
-      type: "warning",
-    },
-    {
-      title: "Fleet Sync",
-      message: "Live vehicle tracking is connected.",
-      type: "success",
-    },
-    {
-      title: "Trip Monitoring",
-      message: `${inProgressTrips} trip currently in progress.`,
-      type: "info",
-    },
-  ];
+  const alerts: {
+  title: string;
+  message: string;
+  type: "warning" | "success" | "info" | "danger";
+}[] = [
+  {
+    title: "AI Fatigue Alert",
+    message: "Driver attention monitoring is active.",
+    type: "warning",
+  },
+  {
+    title: "Fleet Sync",
+    message: "Live vehicle tracking is connected.",
+    type: "success",
+  },
+  {
+    title: "Trip Monitoring",
+    message: `${inProgressTrips} trip currently in progress.`,
+    type: "info",
+  },
+];
 
   const cameraEvents = [
     {
