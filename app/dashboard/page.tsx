@@ -10,6 +10,10 @@ import DashboardRevenue from "../components/DashboardRevenue";
 import DashboardAIStatus from "../components/DashboardAIStatus";
 import DashboardCameraEvents from "../components/DashboardCameraEvents";
 import DashboardLiveMap from "../components/DashboardLiveMap";
+import DashboardVehicleStatus from "../components/DashboardVehicleStatus";
+import DashboardSafetyScore from "../components/DashboardSafetyScore";
+import DashboardDriverLeaderboard from "../components/DashboardDriverLeaderboard";
+import DashboardSystemHealth from "../components/DashboardSystemHealth";
 
 export default async function DashboardPage() {
   const { data: vehicles } = await supabase.from("vehicles").select("*");
@@ -18,167 +22,126 @@ export default async function DashboardPage() {
 
   const { data: trips } = await supabase
     .from("trips")
-    .select(
-      `
-      *,
-      customers(company_name),
-      vehicles(vehicle_number),
-      drivers(name)
-    `
-    )
+    .select("*")
     .order("id", { ascending: false });
 
-  const totalVehicles = vehicles?.length || 0;
-  const totalDrivers = drivers?.length || 0;
-  const totalCustomers = customers?.length || 0;
-  const totalTrips = trips?.length || 0;
+  const safeVehicles = Array.isArray(vehicles) ? vehicles : [];
+  const safeDrivers = Array.isArray(drivers) ? drivers : [];
+  const safeCustomers = Array.isArray(customers) ? customers : [];
+  const safeTrips = Array.isArray(trips) ? trips : [];
 
-  const activeVehicles =
-    vehicles?.filter((vehicle) => vehicle.status === "Active").length || 0;
+  const totalVehicles = safeVehicles.length;
+  const totalDrivers = safeDrivers.length;
+  const totalCustomers = safeCustomers.length;
+  const totalTrips = safeTrips.length;
 
-  const inactiveVehicles =
-    vehicles?.filter((vehicle) => vehicle.status !== "Active").length || 0;
+  const activeVehicles = safeVehicles.filter(
+    (vehicle) => (vehicle.status || "").toLowerCase() === "active"
+  ).length;
 
-  const completedTrips =
-    trips?.filter((trip) => trip.status === "Completed").length || 0;
+  const completedTrips = safeTrips.filter(
+    (trip) => (trip.status || "").toLowerCase() === "completed"
+  ).length;
 
-  const inProgressTrips =
-    trips?.filter((trip) => trip.status === "In Progress").length || 0;
-
-  const pendingTrips =
-    trips?.filter((trip) => trip.status === "Pending").length || 0;
-
-  const totalRevenue =
-    trips?.reduce((sum, trip) => {
-      return sum + Number(trip.revenue || 0);
-    }, 0) || 0;
-
-  const recentTrips = trips?.slice(0, 5) || [];
-
-  const alerts: {
-  title: string;
-  message: string;
-  type: "warning" | "success" | "info" | "danger";
-}[] = [
-  {
-    title: "AI Fatigue Alert",
-    message: "Driver attention monitoring is active.",
-    type: "warning",
-  },
-  {
-    title: "Fleet Sync",
-    message: "Live vehicle tracking is connected.",
-    type: "success",
-  },
-  {
-    title: "Trip Monitoring",
-    message: `${inProgressTrips} trip currently in progress.`,
-    type: "info",
-  },
-];
-
-  const cameraEvents = [
-    {
-      id: 1,
-      vehicle: "MH04XY5678",
-      driver: "Rajesh",
-      event: "Driver Fatigue Detected",
-      severity: "High" as const,
-      time: "10 mins ago",
-    },
-    {
-      id: 2,
-      vehicle: "MH12PQ7890",
-      driver: "Amit",
-      event: "Mobile Phone Usage",
-      severity: "Medium" as const,
-      time: "25 mins ago",
-    },
-    {
-      id: 3,
-      vehicle: "MH04XY5678",
-      driver: "Rajesh",
-      event: "Harsh Braking",
-      severity: "Low" as const,
-      time: "1 hour ago",
-    },
-  ];
+  const totalRevenue = safeTrips.reduce((sum, trip) => {
+    const revenue = Number(trip.revenue || 0);
+    return sum + revenue;
+  }, 0);
 
   return (
     <AppLayout>
-      <main className="min-h-screen bg-slate-950 p-6 text-white">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">GARUD AI Dashboard</h1>
-          <p className="mt-2 text-slate-400">
-            Monitor fleet activity, driver safety, revenue, and AI alerts.
+      <div className="min-h-screen bg-slate-950 p-4 text-white md:p-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold md:text-3xl">
+            GARUD AI Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Monitor. Protect. Prevent.
           </p>
         </div>
 
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <DashboardCard
             title="Total Vehicles"
             value={totalVehicles}
-            subtitle={`${activeVehicles} active / ${inactiveVehicles} inactive`}
+            subtitle={`${activeVehicles} active vehicles`}
+            href="/vehicles"
           />
 
           <DashboardCard
-            title="Total Drivers"
+            title="Drivers"
             value={totalDrivers}
             subtitle="Registered drivers"
+            href="/drivers"
           />
 
           <DashboardCard
             title="Customers"
             value={totalCustomers}
             subtitle="Fleet customers"
+            href="/customers"
           />
 
           <DashboardCard
             title="Trips"
             value={totalTrips}
-            subtitle={`${completedTrips} completed / ${pendingTrips} pending`}
+            subtitle={`${completedTrips} completed`}
+            href="/trips"
           />
-        </section>
+        </div>
 
-        <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
           <div className="xl:col-span-2">
-            <DashboardRevenue
-              totalRevenue={totalRevenue}
-              completedTrips={completedTrips}
-              inProgressTrips={inProgressTrips}
-              pendingTrips={pendingTrips}
+            <DashboardLiveMap vehicles={safeVehicles} />
+          </div>
+
+          <DashboardSafetyScore
+            vehicles={safeVehicles}
+            drivers={safeDrivers}
+            trips={safeTrips}
+          />
+        </div>
+
+        <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <DashboardVehicleStatus vehicles={safeVehicles} />
+
+          <DashboardFleetHealth vehicles={safeVehicles} />
+
+          <DashboardSystemHealth />
+        </div>
+
+        <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <DashboardDriverLeaderboard
+            drivers={safeDrivers}
+            trips={safeTrips}
+          />
+
+          <DashboardAIStatus />
+
+          <DashboardAlerts />
+        </div>
+
+        <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <div className="xl:col-span-2">
+            <DashboardRecentTrips
+              trips={safeTrips}
+              customers={safeCustomers}
+              vehicles={safeVehicles}
+              drivers={safeDrivers}
             />
           </div>
 
+          <DashboardRevenue totalRevenue={totalRevenue} trips={safeTrips} />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <DashboardQuickActions />
-        </section>
 
-        <section className="mt-8">
-          <DashboardLiveMap vehicles={vehicles || []} />
-        </section>
-
-        <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <DashboardAIStatus />
-
-          <DashboardFleetHealth
-  totalVehicles={totalVehicles}
-  activeVehicles={activeVehicles}
-  totalDrivers={totalDrivers}
-  totalCustomers={totalCustomers}
-  totalTrips={totalTrips}
-/>
-
-          <DashboardAlerts alerts={alerts} />
-        </section>
-
-        <section className="mt-8">
-          <DashboardCameraEvents events={cameraEvents} />
-        </section>
-
-        <section className="mt-8">
-          <DashboardRecentTrips trips={recentTrips} />
-        </section>
-      </main>
+          <div className="xl:col-span-2">
+            <DashboardCameraEvents />
+          </div>
+        </div>
+      </div>
     </AppLayout>
   );
 }

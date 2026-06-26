@@ -1,73 +1,88 @@
-import Link from "next/link";
-
 type Alert = {
-  title: string;
-  message: string;
-  type: "warning" | "success" | "info" | "danger";
+  id?: number | string;
+  title?: string | null;
+  message?: string | null;
+  type?: string | null;
+  severity?: string | null;
+  status?: string | null;
+  created_at?: string | null;
 };
 
-export default function DashboardAlerts({ alerts }: { alerts: Alert[] }) {
-  const getAlertStyle = (type: Alert["type"]) => {
-    if (type === "danger") {
-      return "border-red-500/40 bg-red-500/10 text-red-300";
+type DashboardAlertsProps = {
+  alerts?: Alert[] | null;
+};
+
+export default function DashboardAlerts({
+  alerts = [],
+}: DashboardAlertsProps) {
+  const safeAlerts = Array.isArray(alerts) ? alerts : [];
+
+  const visibleAlerts = safeAlerts.slice(0, 4);
+
+  const getBadgeClass = (alert: Alert) => {
+    const value = `${alert.type || ""} ${alert.severity || ""}`.toLowerCase();
+
+    if (value.includes("critical") || value.includes("high")) {
+      return "bg-red-500/15 text-red-400 border-red-500/20";
     }
 
-    if (type === "warning") {
-      return "border-yellow-500/40 bg-yellow-500/10 text-yellow-300";
+    if (value.includes("warning") || value.includes("medium")) {
+      return "bg-amber-500/15 text-amber-400 border-amber-500/20";
     }
 
-    if (type === "success") {
-      return "border-green-500/40 bg-green-500/10 text-green-300";
+    if (value.includes("success") || value.includes("low")) {
+      return "bg-emerald-500/15 text-emerald-400 border-emerald-500/20";
     }
 
-    return "border-blue-500/40 bg-blue-500/10 text-blue-300";
-  };
-
-  const getAlertIcon = (type: Alert["type"]) => {
-    if (type === "danger") return "🚨";
-    if (type === "warning") return "⚠️";
-    if (type === "success") return "✅";
-    return "ℹ️";
+    return "bg-blue-500/15 text-blue-400 border-blue-500/20";
   };
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-white">AI Alerts</h2>
-          <p className="mt-1 text-sm text-slate-400">
-            Safety and system notifications
+          <h2 className="text-lg font-semibold text-white">
+            Safety Alerts
+          </h2>
+          <p className="text-sm text-slate-400">
+            Active risk notifications
           </p>
         </div>
 
-        <Link
-          href="/safety-events"
-          className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 transition hover:border-blue-500 hover:text-blue-400"
-        >
-          View All
-        </Link>
+        <div className="rounded-xl bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-400">
+          {safeAlerts.length}
+        </div>
       </div>
 
       <div className="space-y-4">
-        {alerts.length === 0 && (
+        {visibleAlerts.length === 0 && (
           <div className="rounded-xl border border-slate-800 bg-slate-950 p-5 text-sm text-slate-400">
             No active alerts.
           </div>
         )}
 
-        {alerts.map((alert, index) => (
+        {visibleAlerts.map((alert, index) => (
           <div
-            key={`${alert.title}-${index}`}
-            className={`rounded-xl border p-4 ${getAlertStyle(alert.type)}`}
+            key={alert.id || index}
+            className="rounded-xl border border-slate-800 bg-slate-950/70 p-4"
           >
-            <div className="flex gap-3">
-              <div className="text-xl">{getAlertIcon(alert.type)}</div>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="font-medium text-white">
+                {alert.title || "Safety Alert"}
+              </p>
 
-              <div>
-                <h3 className="font-semibold">{alert.title}</h3>
-                <p className="mt-1 text-sm opacity-80">{alert.message}</p>
-              </div>
+              <span
+                className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getBadgeClass(
+                  alert
+                )}`}
+              >
+                {alert.severity || alert.type || "Info"}
+              </span>
             </div>
+
+            <p className="text-sm text-slate-400">
+              {alert.message || "Vehicle safety event requires attention."}
+            </p>
           </div>
         ))}
       </div>
