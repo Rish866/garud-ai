@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Vehicle } from "../../types/vehicle";
+import type { Vehicle } from "../../../types/vehicle";
 
 type Props = {
   selectedVehicle?: Vehicle;

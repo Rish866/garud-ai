@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Vehicle } from "../types/vehicle";
+import type { Vehicle } from "../../types/vehicle";
 import LiveVehicleSelector from "../components/live/LiveVehicleSelector";
 import LiveFleetMap from "../components/live/LiveFleetMap";
 
