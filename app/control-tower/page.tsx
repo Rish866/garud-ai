@@ -1,7 +1,22 @@
 import AppLayout from "../components/AppLayout";
 import IssueTowerClient from "../components/workflow/IssueTowerClient";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
 
-export default function ControlTowerPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ControlTowerPage() {
+  const supabase = createSupabaseAdminClient();
+  const { data: issues } = await supabase
+    .from("erp_issues")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const openIssues = (issues || []).filter((issue) => issue.status !== "closed");
+  const critical = openIssues.filter((issue) => issue.severity === "critical").length;
+  const evidenceReady = openIssues.filter((issue) =>
+    String(issue.description || "").toLowerCase().includes("evidence")
+  ).length;
+
   return (
     <AppLayout>
       <div className="min-h-screen bg-[#05070d] text-white">
@@ -21,10 +36,10 @@ export default function ControlTowerPage() {
 
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Open issues", "4", "Across departments"],
-            ["SLA at risk", "2", "Escalate now"],
-            ["Evidence attached", "76%", "Video/GPS/POD proof"],
-            ["Avg closure", "3.4 hrs", "This week"],
+            ["Open issues", String(openIssues.length), "Across departments"],
+            ["Critical", String(critical), "Escalate now"],
+            ["Evidence linked", String(evidenceReady), "Video/GPS/POD proof"],
+            ["Total issues", String((issues || []).length), "Live Supabase"],
           ].map(([label, value, hint]) => (
             <div
               key={label}
@@ -37,7 +52,7 @@ export default function ControlTowerPage() {
           ))}
         </section>
 
-        <IssueTowerClient />
+        <IssueTowerClient initialIssues={issues || []} />
       </div>
     </AppLayout>
   );

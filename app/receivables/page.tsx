@@ -1,58 +1,106 @@
 import AppLayout from "../components/AppLayout";
-import {
-  demoCustomers,
-  receivableAging,
-  transporterKPIs,
-} from "../lib/demoData";
+import ModuleActions from "../components/erp/ModuleActions";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
 
 function money(value: number) {
   return `INR ${value.toLocaleString("en-IN")}`;
 }
 
-const customerReceivables = [
-  {
-    customer: "TransOcean Logistics",
-    invoice: "INV-2407-018",
-    amount: 218000,
-    received: 64000,
-    age: "14 days",
-    status: "Collect today",
-  },
-  {
-    customer: "Bharat Auto Components",
-    invoice: "INV-2407-014",
-    amount: 164500,
-    received: 0,
-    age: "24 days",
-    status: "Follow up",
-  },
-  {
-    customer: "FreshRoute Cold Chain",
-    invoice: "INV-2406-029",
-    amount: 121000,
-    received: 25000,
-    age: "39 days",
-    status: "Escalate",
-  },
-  {
-    customer: "MetroMart Retail",
-    invoice: "INV-2406-021",
-    amount: 109000,
-    received: 0,
-    age: "52 days",
-    status: "Hold credit",
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function ReceivablesPage() {
+export default async function ReceivablesPage() {
+  const supabase = createSupabaseAdminClient();
+  const [{ data: invoices }, { data: payments }] = await Promise.all([
+    supabase.from("invoices").select("*").order("created_at", { ascending: false }),
+    supabase.from("payments").select("*"),
+  ]);
+  const today = Date.now();
+  const customerReceivables = (invoices || []).map((invoice) => {
+    const paid = (payments || [])
+      .filter((payment) => payment.invoice_id === invoice.id)
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    const amount = Number(invoice.amount || 0);
+    const ageDays = invoice.created_at
+      ? Math.max(
+          0,
+          Math.floor((today - new Date(invoice.created_at).getTime()) / 86400000)
+        )
+      : 0;
+    const outstanding = amount - paid;
+    const status =
+      outstanding <= 0
+        ? "Collected"
+        : ageDays > 45
+        ? "Hold credit"
+        : ageDays > 30
+        ? "Escalate"
+        : ageDays > 15
+        ? "Follow up"
+        : "Collect today";
+
+    return {
+      customer: `Trip ${invoice.trip_id || "-"}`,
+      invoice: invoice.invoice_number || `INV-${invoice.id}`,
+      amount,
+      received: paid,
+      age: `${ageDays} days`,
+      status,
+      outstanding,
+    };
+  });
   const totalOutstanding = customerReceivables.reduce(
-    (sum, row) => sum + (row.amount - row.received),
+    (sum, row) => sum + row.outstanding,
     0
   );
   const totalReceived = customerReceivables.reduce(
     (sum, row) => sum + row.received,
     0
   );
+  const rows = customerReceivables.map((row) => [
+    row.customer,
+    row.invoice,
+    row.amount,
+    row.received,
+    row.outstanding,
+    row.age,
+    row.status,
+  ]);
+  const aging = [
+    {
+      bucket: "0-15 days",
+      amount: customerReceivables
+        .filter((row) => Number(row.age.split(" ")[0]) <= 15)
+        .reduce((sum, row) => sum + row.outstanding, 0),
+      status: "Normal collection",
+    },
+    {
+      bucket: "16-30 days",
+      amount: customerReceivables
+        .filter((row) => {
+          const age = Number(row.age.split(" ")[0]);
+          return age > 15 && age <= 30;
+        })
+        .reduce((sum, row) => sum + row.outstanding, 0),
+      status: "Follow up",
+    },
+    {
+      bucket: "31-45 days",
+      amount: customerReceivables
+        .filter((row) => {
+          const age = Number(row.age.split(" ")[0]);
+          return age > 30 && age <= 45;
+        })
+        .reduce((sum, row) => sum + row.outstanding, 0),
+      status: "Escalate",
+    },
+    {
+      bucket: "45+ days",
+      amount: customerReceivables
+        .filter((row) => Number(row.age.split(" ")[0]) > 45)
+        .reduce((sum, row) => sum + row.outstanding, 0),
+      status: "Credit hold",
+    },
+  ];
 
   return (
     <AppLayout>
@@ -70,12 +118,20 @@ export default function ReceivablesPage() {
           </p>
         </section>
 
+        <ModuleActions
+          moduleTitle="Receivables & Credit Control"
+          moduleKey="receivables"
+          columns={["Customer", "Invoice", "Amount", "Received", "Outstanding", "Age", "Action"]}
+          rows={rows}
+          reports={["Receivable aging", "Customer ledger", "Credit hold report", "Collection forecast"]}
+        />
+
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
             ["Outstanding", money(totalOutstanding), "Amount to collect"],
             ["Received", money(totalReceived), "Against open invoices"],
-            ["Open invoices", transporterKPIs.openInvoices, "Across customers"],
-            ["Customers", demoCustomers.length, "Credit accounts"],
+            ["Open invoices", customerReceivables.length, "Across customers"],
+            ["Credit hold", customerReceivables.filter((row) => row.status === "Hold credit").length, "Accounts blocked"],
           ].map(([label, value, hint]) => (
             <div
               key={label}
@@ -109,10 +165,7 @@ export default function ReceivablesPage() {
                     const outstanding = row.amount - row.received;
 
                     return (
-                      <tr
-                        key={row.invoice}
-                        className="border-b border-slate-800"
-                      >
+                      <tr key={row.invoice} className="border-b border-slate-800">
                         <td className="py-4 text-white">{row.customer}</td>
                         <td className="py-4 text-slate-300">{row.invoice}</td>
                         <td className="py-4 text-slate-300">
@@ -121,9 +174,7 @@ export default function ReceivablesPage() {
                         <td className="py-4 text-emerald-300">
                           {money(row.received)}
                         </td>
-                        <td className="py-4 font-bold text-rose-300">
-                          {money(outstanding)}
-                        </td>
+                        <td className="py-4 font-bold text-rose-300">{money(outstanding)}</td>
                         <td className="py-4 text-slate-300">{row.age}</td>
                         <td className="py-4">
                           <span className="rounded-md bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-300">
@@ -141,7 +192,7 @@ export default function ReceivablesPage() {
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
             <h2 className="text-xl font-bold">Aging Summary</h2>
             <div className="mt-5 space-y-4">
-              {receivableAging.map((row) => (
+              {aging.map((row) => (
                 <div key={row.bucket}>
                   <div className="mb-2 flex justify-between text-sm">
                     <span className="text-slate-300">{row.bucket}</span>
@@ -158,7 +209,7 @@ export default function ReceivablesPage() {
                     />
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
-                    {row.count} invoices | {row.status}
+                    {row.status}
                   </p>
                 </div>
               ))}

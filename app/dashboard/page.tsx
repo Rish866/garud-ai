@@ -12,6 +12,7 @@ import {
   receivableAging,
   transporterKPIs,
 } from "../lib/demoData";
+import { ownerPriorityNotifications, toneClass as notificationToneClass } from "../lib/actionRoutes";
 
 function money(value: number) {
   return `INR ${value.toLocaleString("en-IN")}`;
@@ -50,17 +51,17 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-[#05070d] text-white">
-        <section className="mb-6 overflow-hidden rounded-lg border border-white/10 bg-[linear-gradient(135deg,#0f172a,#06131f_50%,#111827)]">
+      <div className="min-h-screen bg-[#05070d] text-slate-900">
+        <section className="mb-6 overflow-hidden rounded-lg border border-cyan-100 bg-[linear-gradient(135deg,#ffffff,#e8f7ff_52%,#f4fff8)] shadow-xl shadow-cyan-900/10">
           <div className="grid gap-6 p-6 xl:grid-cols-[1.15fr_0.85fr]">
             <div>
               <p className="w-fit rounded-md border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
                 Owner control room
               </p>
-              <h1 className="mt-5 max-w-4xl text-4xl font-black tracking-tight md:text-5xl">
+              <h1 className="mt-5 max-w-4xl text-4xl font-black tracking-tight text-slate-950 md:text-5xl">
                 GARUD AI Transport Command Dashboard
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
+              <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
                 One screen for cash, dispatch, vehicle health, driver safety,
                 receivables, compliance, and customer billing readiness.
               </p>
@@ -74,10 +75,10 @@ export default function DashboardPage() {
                 ].map(([label, value, hint]) => (
                   <div
                     key={label}
-                    className="rounded-lg border border-white/10 bg-white/[0.04] p-4"
+                    className="min-w-0 rounded-lg border border-cyan-100 bg-white/85 p-4 shadow-sm"
                   >
-                    <p className="text-xs text-slate-400">{label}</p>
-                    <p className="mt-2 text-2xl font-black text-white">
+                    <p className="text-xs text-slate-500">{label}</p>
+                    <p className="mt-2 break-words text-xl font-black text-slate-950">
                       {value}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">{hint}</p>
@@ -86,10 +87,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-cyan-400/20 bg-black/20 p-4">
+            <div className="rounded-lg border border-cyan-100 bg-white/90 p-4 shadow-lg shadow-cyan-900/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold text-white">
+                  <p className="text-sm font-bold text-slate-950">
                     Today&apos;s command priorities
                   </p>
                   <p className="mt-1 text-xs text-slate-400">
@@ -102,21 +103,36 @@ export default function DashboardPage() {
               </div>
 
               <div className="mt-4 space-y-3">
-                {[
-                  "Collect INR 2.18L from 0-15 day invoices before dispatch cut-off.",
-                  "Hold credit on two customers crossing 45+ days outstanding.",
-                  "Pull RJ14BT4501 from reefer duty until engine heat is cleared.",
-                  "Coach Mohan Reddy for distraction event before next trip assignment.",
-                ].map((item, index) => (
-                  <div
-                    key={item}
-                    className="flex gap-3 rounded-md border border-white/10 bg-white/[0.04] p-3"
+                {ownerPriorityNotifications.map((item, index) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className="group flex gap-3 rounded-md border border-cyan-100 bg-sky-50/70 p-3 transition hover:border-cyan-300 hover:bg-cyan-50"
                   >
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-cyan-400/10 text-xs font-black text-cyan-200">
                       {index + 1}
                     </span>
-                    <p className="text-sm leading-6 text-slate-300">{item}</p>
-                  </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold leading-6 text-slate-950">
+                          {item.title}
+                        </p>
+                        <span
+                          className={`rounded-md border px-2 py-1 text-[10px] font-bold ${notificationToneClass(
+                            item.tone
+                          )}`}
+                        >
+                          {item.meta}
+                        </span>
+                      </div>
+                      <p className="text-xs leading-5 text-slate-400">
+                        {item.detail}
+                      </p>
+                      <p className="mt-1 text-xs font-bold text-cyan-300 transition group-hover:translate-x-1">
+                        Open linked module
+                      </p>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -160,10 +176,11 @@ export default function DashboardPage() {
 
             <div className="grid gap-3 lg:grid-cols-2">
               {dispatchBoard.map((lane) => (
-                <div
-                  key={lane.lane}
-                  className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
-                >
+                  <Link
+                    key={lane.lane}
+                    href={`/route-planner?lane=${encodeURIComponent(lane.lane)}`}
+                    className="block rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                  >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-bold text-white">{lane.lane}</p>
@@ -181,8 +198,8 @@ export default function DashboardPage() {
                     </p>
                     <p className="text-xs text-slate-500">market rate</p>
                   </div>
-                </div>
-              ))}
+                  </Link>
+                ))}
             </div>
           </div>
 
@@ -193,7 +210,7 @@ export default function DashboardPage() {
             </p>
             <div className="mt-5 space-y-3">
               {receivableAging.map((row) => (
-                <div key={row.bucket}>
+                <Link key={row.bucket} href="/receivables" className="block rounded-md p-2 transition hover:bg-cyan-400/10">
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="text-slate-300">{row.bucket}</span>
                     <span className="font-bold text-white">
@@ -211,7 +228,7 @@ export default function DashboardPage() {
                   <p className="mt-1 text-xs text-slate-500">
                     {row.count} invoices, {row.status}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -234,9 +251,10 @@ export default function DashboardPage() {
                 );
 
                 return (
-                  <div
+                  <Link
                     key={trip.id}
-                    className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                    href={`/trips?record=${trip.id}`}
+                    className="block rounded-lg border border-slate-800 bg-slate-950/80 p-4"
                   >
                     <p className="font-bold text-white">
                       {trip.origin} to {trip.destination}
@@ -247,7 +265,7 @@ export default function DashboardPage() {
                       <span>{trip.distanceKm} km</span>
                       <span>ETA {trip.eta}</span>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
@@ -259,9 +277,10 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold">Compliance Queue</h2>
             <div className="mt-4 space-y-3">
               {complianceQueue.map((item) => (
-                <div
+                <Link
                   key={`${item.item}-${item.vehicle}`}
-                  className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                  href={`/document-center?entity=${encodeURIComponent(item.vehicle)}`}
+                  className="block rounded-lg border border-slate-800 bg-slate-950/80 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -278,7 +297,7 @@ export default function DashboardPage() {
                       {item.risk}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -287,9 +306,10 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold">Maintenance Queue</h2>
             <div className="mt-4 space-y-3">
               {maintenanceQueue.map((item) => (
-                <div
+                <Link
                   key={`${item.vehicle}-${item.issue}`}
-                  className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                  href={`/maintenance-center?vehicle=${encodeURIComponent(item.vehicle)}`}
+                  className="block rounded-lg border border-slate-800 bg-slate-950/80 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -311,7 +331,7 @@ export default function DashboardPage() {
                   <p className="mt-3 text-sm font-bold text-cyan-200">
                     Est. {money(item.cost)}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -320,9 +340,10 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold">AI Safety Feed</h2>
             <div className="mt-4 space-y-3">
               {commandEvents.map((event) => (
-                <div
+                <Link
                   key={`${event.vehicle}-${event.time}`}
-                  className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                  href={`/safety-events?vehicle=${encodeURIComponent(event.vehicle)}`}
+                  className="block rounded-lg border border-slate-800 bg-slate-950/80 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -342,7 +363,7 @@ export default function DashboardPage() {
                   <p className="mt-3 text-xs leading-5 text-slate-400">
                     {event.detail}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

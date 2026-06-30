@@ -1,7 +1,42 @@
 import AppLayout from "../components/AppLayout";
-import { customerPortalShipments } from "../lib/operatingSystemData";
+import ModuleActions from "../components/erp/ModuleActions";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
 
-export default function CustomerPortalPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CustomerPortalPage() {
+  const supabase = createSupabaseAdminClient();
+  const [{ data: trips }, { data: packs }, { data: invoices }] =
+    await Promise.all([
+      supabase.from("trips").select("*").order("id", { ascending: false }),
+      supabase.from("erp_billing_packs").select("*"),
+      supabase.from("invoices").select("*"),
+    ]);
+  const shipments = (trips || []).map((trip) => {
+    const pack = (packs || []).find(
+      (item) => String(item.trip_label) === String(trip.id)
+    );
+    const invoice = (invoices || []).find((item) => item.trip_id === trip.id);
+
+    return {
+      shipment: `SHP-${trip.id}`,
+      customer: pack?.customer_label || `Customer ${trip.customer_id || "-"}`,
+      trip: String(trip.id),
+      status: trip.status || "Pending",
+      eta: trip.destination || "-",
+      pod: pack?.includes_pod ? "Available" : "Pending",
+      invoice: invoice?.invoice_number || "Draft",
+    };
+  });
+  const rows = shipments.map((shipment) => [
+    shipment.shipment,
+    shipment.customer,
+    shipment.trip,
+    shipment.status,
+    shipment.pod,
+    shipment.invoice,
+  ]);
+
   return (
     <AppLayout>
       <div className="min-h-screen bg-[#05070d] text-white">
@@ -17,6 +52,14 @@ export default function CustomerPortalPage() {
             status, dispute workflow, and branded tracking links.
           </p>
         </section>
+
+        <ModuleActions
+          moduleTitle="Customer Portal & Shipment Tracking"
+          moduleKey="customer-portal"
+          columns={["Shipment", "Customer", "Trip", "Status", "POD", "Invoice"]}
+          rows={rows}
+          reports={["Customer shipment view", "POD download log", "Invoice status export", "Dispute queue"]}
+        />
 
         <section className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-xl font-bold">Customer Shipment View</h2>
@@ -34,7 +77,7 @@ export default function CustomerPortalPage() {
                 </tr>
               </thead>
               <tbody>
-                {customerPortalShipments.map((shipment) => (
+                {shipments.map((shipment) => (
                   <tr
                     key={shipment.shipment}
                     className="border-b border-slate-800"

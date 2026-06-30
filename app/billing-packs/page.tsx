@@ -1,7 +1,24 @@
 import AppLayout from "../components/AppLayout";
-import { billingPacks } from "../lib/operatingSystemData";
+import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
+import ModuleActions from "../components/erp/ModuleActions";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
 
-export default function BillingPacksPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BillingPacksPage() {
+  const supabase = createSupabaseAdminClient();
+  const { data: packs } = await supabase
+    .from("erp_billing_packs")
+    .select("*")
+    .order("created_at", { ascending: false });
+  const rows = (packs || []).map((pack) => [
+    pack.trip_label,
+    pack.customer_label,
+    pack.invoice_label || "-",
+    pack.includes_pod ? "POD" : "POD missing",
+    pack.status,
+  ]);
+
   return (
     <AppLayout>
       <div className="min-h-screen bg-[#05070d] text-white">
@@ -18,45 +35,30 @@ export default function BillingPacksPage() {
           </p>
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-3">
-          {billingPacks.map((pack) => (
-            <div
-              key={pack.id}
-              className="rounded-lg border border-slate-800 bg-slate-900/80 p-6"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold text-slate-500">{pack.id}</p>
-                  <h2 className="mt-1 text-xl font-black text-white">
-                    Trip {pack.trip}
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-400">{pack.customer}</p>
-                </div>
-                <span className="rounded-md bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-300">
-                  {pack.status}
-                </span>
-              </div>
+        <ModuleActions
+          moduleTitle="POD, GPS & Billing Pack Builder"
+          moduleKey="erp_billing_packs"
+          columns={["Trip", "Customer", "Invoice", "POD", "Status"]}
+          rows={rows}
+          reports={["Customer billing packet", "POD proof pack", "GPS trail export", "Invoice evidence pack"]}
+        />
 
-              <div className="mt-5 space-y-2">
-                {pack.includes.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-md border border-slate-800 bg-slate-950/80 px-3 py-2 text-sm text-slate-300"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                className="mt-5 w-full rounded-md bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950"
-              >
-                Generate pack
-              </button>
-            </div>
-          ))}
-        </section>
+        <DatabaseWorkbench
+          title="Billing Pack"
+          table="erp_billing_packs"
+          initialRows={packs || []}
+          fields={[
+            { key: "trip_label", label: "Trip", required: true },
+            { key: "customer_label", label: "Customer", required: true },
+            { key: "invoice_label", label: "Invoice" },
+            { key: "includes_pod", label: "POD Included", type: "checkbox" },
+            { key: "includes_gps", label: "GPS Included", type: "checkbox" },
+            { key: "includes_expenses", label: "Expenses Included", type: "checkbox" },
+            { key: "includes_video", label: "Video Included", type: "checkbox" },
+            { key: "share_url", label: "Share URL" },
+            { key: "status", label: "Status", type: "select", options: ["draft", "review", "ready", "sent", "disputed"], required: true },
+          ]}
+        />
       </div>
     </AppLayout>
   );

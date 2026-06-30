@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type Alert = {
   id?: number | string;
   title?: string | null;
@@ -6,6 +8,7 @@ type Alert = {
   severity?: string | null;
   status?: string | null;
   created_at?: string | null;
+  href?: string | null;
 };
 
 type DashboardAlertsProps = {
@@ -62,8 +65,9 @@ export default function DashboardAlerts({
         )}
 
         {visibleAlerts.map((alert, index) => (
-          <div
+          <Link
             key={alert.id || index}
+            href={alert.href || "/control-tower"}
             className="rounded-xl border border-slate-800 bg-slate-950/70 p-4"
           >
             <div className="mb-2 flex items-center justify-between gap-3">
@@ -83,7 +87,7 @@ export default function DashboardAlerts({
             <p className="text-sm text-slate-400">
               {alert.message || "Vehicle safety event requires attention."}
             </p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

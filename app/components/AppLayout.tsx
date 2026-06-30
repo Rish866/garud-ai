@@ -3,32 +3,17 @@ import Link from "next/link";
 
 const navSections = [
   {
-    title: "Core",
+    title: "Command",
     items: [
       { name: "Dashboard", href: "/dashboard", icon: "DB" },
+      { name: "GARUD Agent", href: "/garud-agent", icon: "AI" },
       { name: "TMS Lifecycle", href: "/tms", icon: "TMS" },
       { name: "Command Center", href: "/command-center", icon: "CC" },
       { name: "Control Tower", href: "/control-tower", icon: "ISS" },
       { name: "Route Planner", href: "/route-planner", icon: "RT" },
       { name: "Reports", href: "/reports", icon: "RPT" },
-      { name: "Live Fleet", href: "/fleet-map", icon: "MAP" },
-      { name: "Live Monitoring", href: "/live", icon: "CAM" },
-    ],
-  },
-  {
-    title: "AI Safety",
-    items: [
-      { name: "Safety Command Center", href: "/safety-center", icon: "SC" },
-      { name: "Safety Events", href: "/safety-events", icon: "AI" },
-      { name: "Incident Clips", href: "/incidentclips", icon: "CLP" },
-      { name: "Video Archive", href: "/video-archive", icon: "ARC" },
-      { name: "Video Search", href: "/video-search", icon: "SEA" },
-      { name: "Video Requests", href: "/video-requests", icon: "REQ" },
-      { name: "Driver App", href: "/driver-app", icon: "APP" },
-      { name: "Driver Safety Score", href: "/driver-score", icon: "SCO" },
-      { name: "Violation History", href: "/violation-history", icon: "VIO" },
-      { name: "AI Risk Engine", href: "/risk-engine", icon: "RISK" },
-      { name: "Top Risk Vehicles", href: "/vehicle-risk", icon: "TOP" },
+      { name: "ERP Modules", href: "/erp-architecture", icon: "ERP" },
+      { name: "Readiness", href: "/system-readiness", icon: "RDY" },
     ],
   },
   {
@@ -40,6 +25,7 @@ const navSections = [
       { name: "Customer Portal", href: "/customer-portal", icon: "PORT" },
       { name: "Trips", href: "/trips", icon: "TRP" },
       { name: "Trip Expenses", href: "/trip-expenses", icon: "EXP" },
+      { name: "Driver App", href: "/driver-app", icon: "APP" },
     ],
   },
   {
@@ -63,6 +49,16 @@ const navSections = [
       { name: "Receivables", href: "/receivables", icon: "REC" },
       { name: "Vehicle Profitability", href: "/profitability", icon: "ROI" },
       { name: "Billing", href: "/billing", icon: "BIL" },
+    ],
+  },
+  {
+    title: "AI Safety & Video",
+    items: [
+      { name: "Live Dashcam", href: "/live-dashcam", icon: "LIVE" },
+      { name: "Safety Events", href: "/safety-events", icon: "AI" },
+      { name: "Video Search", href: "/video-search", icon: "SEA" },
+      { name: "Video Requests", href: "/video-requests", icon: "REQ" },
+      { name: "AI Risk Engine", href: "/risk-engine", icon: "RISK" },
     ],
   },
 ];
@@ -140,17 +136,17 @@ export default function AppLayout({
 
             <div className="hidden items-center gap-3 md:flex">
               <Link
-                href="/command-center"
+                href="/garud-agent"
                 className="rounded-md bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-300"
               >
-                Command center
+                GARUD Agent
               </Link>
 
               <Link
-                href="/trips/add"
+                href="/live-dashcam"
                 className="rounded-md border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-bold text-slate-200 hover:bg-white/10"
               >
-                Create trip
+                Live dashcam
               </Link>
 
               <div className="rounded-md bg-green-500/10 px-4 py-2 text-sm font-medium text-green-400">

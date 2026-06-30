@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AppLayout from "../AppLayout";
+import ModuleActions from "./ModuleActions";
 
 export type ERPMetric = {
   label: string;
@@ -105,6 +106,14 @@ export default function ERPModulePage({ config }: { config: ERPModuleConfig }) {
           </div>
         </section>
 
+        <ModuleActions
+          moduleTitle={config.title}
+          moduleKey={config.eyebrow}
+          columns={config.table.columns}
+          rows={config.table.rows}
+          reports={config.reports}
+        />
+
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {config.metrics.map((metric) => (
             <div
@@ -178,6 +187,7 @@ export default function ERPModulePage({ config }: { config: ERPModuleConfig }) {
                         {column}
                       </th>
                     ))}
+                    <th className="pb-3 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -198,6 +208,34 @@ export default function ERPModulePage({ config }: { config: ERPModuleConfig }) {
                           {cell}
                         </td>
                       ))}
+                      <td className="py-4">
+                        <div className="flex flex-wrap gap-2">
+                          <Link
+                            href={`${config.primaryAction.href}?record=${encodeURIComponent(
+                              String(row[0])
+                            )}`}
+                            className="rounded-md border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1.5 text-xs font-bold text-cyan-200 transition hover:bg-cyan-400/15"
+                          >
+                            Open
+                          </Link>
+                          <Link
+                            href={`/control-tower?module=${encodeURIComponent(
+                              config.title
+                            )}&record=${encodeURIComponent(String(row[0]))}`}
+                            className="rounded-md border border-amber-400/25 bg-amber-400/10 px-2.5 py-1.5 text-xs font-bold text-amber-200 transition hover:bg-amber-400/15"
+                          >
+                            Issue
+                          </Link>
+                          <Link
+                            href={`/reports?module=${encodeURIComponent(
+                              config.title
+                            )}&record=${encodeURIComponent(String(row[0]))}`}
+                            className="rounded-md border border-white/15 px-2.5 py-1.5 text-xs font-bold text-slate-200 transition hover:bg-white/10"
+                          >
+                            Report
+                          </Link>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -217,6 +255,22 @@ export default function ERPModulePage({ config }: { config: ERPModuleConfig }) {
                   <p className="mt-1 text-xs text-slate-500">
                     Export-ready for owner, customer, or auditor review.
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      href={`/reports?report=${encodeURIComponent(report)}`}
+                      className="rounded-md bg-cyan-400 px-2.5 py-1.5 text-xs font-black text-slate-950"
+                    >
+                      Open
+                    </Link>
+                    <Link
+                      href={`/billing-packs?report=${encodeURIComponent(
+                        report
+                      )}`}
+                      className="rounded-md border border-white/15 px-2.5 py-1.5 text-xs font-bold text-slate-200"
+                    >
+                      Pack
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>

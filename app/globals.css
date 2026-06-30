@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #05070d;
-  --foreground: #f8fafc;
+  --background: #eef7ff;
+  --foreground: #102033;
+  --surface: #ffffff;
+  --surface-soft: #f6fbff;
+  --surface-tint: #e8f7ff;
+  --line: #cfe4f4;
+  --muted: #5d7288;
+  --brand: #0891b2;
+  --brand-strong: #0e7490;
 }
 
 @theme inline {
@@ -17,11 +24,15 @@
 }
 
 html {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.22), transparent 32rem),
+    linear-gradient(135deg, #f7fcff 0%, #edf8ff 44%, #f8fbff 100%);
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.22), transparent 32rem),
+    linear-gradient(135deg, #f7fcff 0%, #edf8ff 44%, #f8fbff 100%);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
@@ -33,4 +44,88 @@ body {
 a,
 button {
   outline-color: #22d3ee;
+}
+
+/* Premium light cockpit theme overrides for older dark Tailwind screens. */
+.bg-\[\#05070d\],
+[class*="bg-[#05070d]"],
+[class*="bg-[linear-gradient"] {
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 28rem),
+    linear-gradient(135deg, #f8fcff 0%, #edf8ff 48%, #ffffff 100%) !important;
+}
+
+.bg-\[\#07111f\]\/95,
+[class*="bg-[#07111f]"] {
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 20px 70px rgba(14, 116, 144, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.bg-slate-950,
+.bg-slate-950\/70,
+.bg-slate-950\/80 {
+  background: #ffffff !important;
+}
+
+.bg-slate-900,
+.bg-slate-900\/80 {
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: 0 18px 50px rgba(15, 64, 96, 0.08);
+}
+
+.bg-black\/20,
+.bg-white\/\[0\.04\] {
+  background: rgba(255, 255, 255, 0.62) !important;
+}
+
+.border-slate-800,
+.border-white\/10,
+.border-white\/15,
+.border-slate-700 {
+  border-color: var(--line) !important;
+}
+
+.text-white {
+  color: #102033 !important;
+}
+
+.text-slate-200,
+.text-slate-300,
+.text-slate-400 {
+  color: #486176 !important;
+}
+
+.text-slate-500 {
+  color: var(--muted) !important;
+}
+
+.text-cyan-200,
+.text-cyan-300,
+.text-cyan-400 {
+  color: var(--brand-strong) !important;
+}
+
+.bg-cyan-400 {
+  background: linear-gradient(135deg, #06b6d4, #22c55e) !important;
+}
+
+.text-slate-950 {
+  color: #062532 !important;
+}
+
+input,
+select,
+textarea {
+  background: #ffffff !important;
+  color: #102033 !important;
+  border-color: var(--line) !important;
+}
+
+table thead {
+  background: #e8f7ff !important;
+}
+
+tr:hover {
+  background: rgba(14, 165, 233, 0.08) !important;
 }

@@ -1,0 +1,102 @@
+import { NextResponse } from "next/server";
+import { erpTableRequirements } from "../../../lib/erpSchema";
+import { createSupabaseAdminClient } from "../../../lib/supabaseAdmin";
+
+const allowedTables = new Set(erpTableRequirements.map((item) => item.table));
+
+function getTable(value: unknown) {
+  if (typeof value !== "string" || !allowedTables.has(value)) {
+    throw new Error("Table is not allowed");
+  }
+
+  return value;
+}
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const table = getTable(url.searchParams.get("table"));
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from(table)
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true, data });
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  const table = getTable(body.table);
+  const values = body.values;
+
+  if (!values || typeof values !== "object") {
+    return NextResponse.json(
+      { ok: false, message: "Record values are required" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from(table)
+    .insert(values)
+    .select("*")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true, data });
+}
+
+export async function PATCH(request: Request) {
+  const body = await request.json();
+  const table = getTable(body.table);
+
+  if (!body.id || !body.values || typeof body.values !== "object") {
+    return NextResponse.json(
+      { ok: false, message: "Record id and values are required" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from(table)
+    .update(body.values)
+    .eq("id", body.id)
+    .select("*")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true, data });
+}
+
+export async function DELETE(request: Request) {
+  const body = await request.json();
+  const table = getTable(body.table);
+
+  if (!body.id) {
+    return NextResponse.json(
+      { ok: false, message: "Record id is required" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from(table).delete().eq("id", body.id);
+
+  if (error) {
+    return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

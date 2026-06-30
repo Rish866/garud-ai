@@ -1,7 +1,25 @@
 import AppLayout from "../components/AppLayout";
-import { routePlans } from "../lib/operatingSystemData";
+import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
+import ModuleActions from "../components/erp/ModuleActions";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
 
-export default function RoutePlannerPage() {
+export const dynamic = "force-dynamic";
+
+export default async function RoutePlannerPage() {
+  const supabase = createSupabaseAdminClient();
+  const { data: routePlans } = await supabase
+    .from("erp_route_plans")
+    .select("*")
+    .order("created_at", { ascending: false });
+  const rows = (routePlans || []).map((route) => [
+    route.lane_label,
+    route.origin,
+    route.destination,
+    route.planned_km || 0,
+    route.risk_level,
+    route.status,
+  ]);
+
   return (
     <AppLayout>
       <div className="min-h-screen bg-[#05070d] text-white">
@@ -19,70 +37,30 @@ export default function RoutePlannerPage() {
           </p>
         </section>
 
-        <section className="grid gap-4">
-          {routePlans.map((route) => (
-            <div
-              key={route.id}
-              className="rounded-lg border border-slate-800 bg-slate-900/80 p-6"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold text-slate-500">{route.id}</p>
-                  <h2 className="mt-1 text-2xl font-black text-white">
-                    {route.lane}
-                  </h2>
-                </div>
-                <span className="rounded-md bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-300">
-                  ETA {route.eta}
-                </span>
-              </div>
+        <ModuleActions
+          moduleTitle="Route Planner, Geofence & Detention Engine"
+          moduleKey="erp_route_plans"
+          columns={["Lane", "Origin", "Destination", "KM", "Risk", "Status"]}
+          rows={rows}
+          reports={["Route plan export", "Detention estimate", "Lane risk report", "Fuel and toll estimate"]}
+        />
 
-              <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_0.8fr]">
-                <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-4">
-                  <p className="text-sm font-bold text-white">
-                    Geofence Milestones
-                  </p>
-                  <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    {route.geofences.map((geofence, index) => (
-                      <div
-                        key={geofence}
-                        className="rounded-lg border border-cyan-400/20 bg-cyan-400/10 p-4"
-                      >
-                        <p className="text-xs font-bold text-cyan-300">
-                          Stop {index + 1}
-                        </p>
-                        <p className="mt-2 font-semibold text-white">
-                          {geofence}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-1">
-                  <div className="rounded-lg bg-slate-950/80 p-4">
-                    <p className="text-xs text-slate-500">Distance</p>
-                    <p className="mt-2 text-xl font-black text-white">
-                      {route.distance} km
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-slate-950/80 p-4">
-                    <p className="text-xs text-slate-500">Deviation</p>
-                    <p className="mt-2 text-xl font-black text-white">
-                      {route.deviation}
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-slate-950/80 p-4">
-                    <p className="text-xs text-slate-500">Detention risk</p>
-                    <p className="mt-2 text-xl font-black text-white">
-                      {route.detentionRisk}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </section>
+        <DatabaseWorkbench
+          title="Route Plan"
+          table="erp_route_plans"
+          initialRows={routePlans || []}
+          fields={[
+            { key: "lane_label", label: "Lane", required: true },
+            { key: "origin", label: "Origin", required: true },
+            { key: "destination", label: "Destination", required: true },
+            { key: "planned_km", label: "Planned KM", type: "number" },
+            { key: "planned_hours", label: "Planned Hours", type: "number" },
+            { key: "toll_estimate", label: "Toll Estimate", type: "number" },
+            { key: "fuel_estimate", label: "Fuel Estimate", type: "number" },
+            { key: "risk_level", label: "Risk", type: "select", options: ["normal", "medium", "high", "critical"], required: true },
+            { key: "status", label: "Status", type: "select", options: ["active", "hold", "archived"], required: true },
+          ]}
+        />
       </div>
     </AppLayout>
   );

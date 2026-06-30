@@ -1,4 +1,5 @@
 import AppLayout from "../components/AppLayout";
+import ModuleActions from "../components/erp/ModuleActions";
 import {
   complianceQueue,
   demoDrivers,
@@ -30,6 +31,12 @@ export default function ReportsPage() {
   const bestDriver = [...demoDrivers].sort(
     (a, b) => Number(b.safety_score || 0) - Number(a.safety_score || 0)
   )[0];
+  const reportRows = reportCatalog.map((report) => [
+    report.title,
+    report.owner,
+    report.cadence,
+    report.output,
+  ]);
 
   return (
     <AppLayout>
@@ -46,6 +53,14 @@ export default function ReportsPage() {
             customers, compliance teams, and insurance claims.
           </p>
         </section>
+
+        <ModuleActions
+          moduleTitle="Transporter Reports & Analytics"
+          exportName="garud-reports-library"
+          columns={["Report", "Owner", "Cadence", "Output"]}
+          rows={reportRows}
+          reports={reportCatalog.map((report) => report.title)}
+        />
 
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
@@ -88,6 +103,32 @@ export default function ReportsPage() {
                   <p className="mt-4 text-xs text-slate-500">
                     Owner: {report.owner}
                   </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <a
+                      href={`/reports?report=${encodeURIComponent(
+                        report.title
+                      )}`}
+                      className="rounded-md bg-cyan-400 px-3 py-2 text-xs font-black text-slate-950"
+                    >
+                      Open Report
+                    </a>
+                    <a
+                      href={`/billing-packs?report=${encodeURIComponent(
+                        report.title
+                      )}`}
+                      className="rounded-md border border-white/15 px-3 py-2 text-xs font-bold text-slate-200"
+                    >
+                      Build Pack
+                    </a>
+                    <a
+                      href={`/control-tower?report=${encodeURIComponent(
+                        report.title
+                      )}`}
+                      className="rounded-md border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-200"
+                    >
+                      Raise Issue
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>

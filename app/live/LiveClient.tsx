@@ -13,9 +13,15 @@ import LiveFleetMapCompact from "../components/live/LiveFleetMapCompact";
 
 type Props = {
   vehicles: Vehicle[];
+  title?: string;
+  subtitle?: string;
 };
 
-export default function LiveClient({ vehicles }: Props) {
+export default function LiveClient({
+  vehicles,
+  title = "GARUD AI Live Command Center",
+  subtitle = "4CH dashcam monitoring, AI events, playback, vehicle telemetry and GPS",
+}: Props) {
   const safeVehicles = Array.isArray(vehicles) ? vehicles : [];
 
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>(
@@ -57,11 +63,11 @@ export default function LiveClient({ vehicles }: Props) {
       <div className="mb-5 flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
         <div>
           <h1 className="text-2xl font-bold md:text-3xl">
-            GARUD AI Live Command Center
+            {title}
           </h1>
 
           <p className="mt-1 text-sm text-slate-400">
-            4CH dashcam monitoring, AI events, playback, vehicle telemetry and GPS
+            {subtitle}
           </p>
         </div>
 
