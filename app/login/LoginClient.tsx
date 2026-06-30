@@ -36,58 +36,102 @@ export default function LoginClient() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#eef9ff,#ffffff_42%,#eafff5)] px-5 py-8 text-slate-950">
-      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-6xl items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-        <section>
-          <div className="flex items-center gap-4">
-            <div className="relative h-24 w-24 overflow-hidden rounded-2xl border border-cyan-200 bg-white shadow-lg">
+    <main className="min-h-screen overflow-hidden bg-[#f4fbff] text-slate-950">
+      <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="relative flex items-center px-6 py-10 sm:px-10 lg:px-16">
+          <div className="absolute inset-0 bg-[linear-gradient(140deg,#e7f8ff_0%,#ffffff_48%,#e9fff7_100%)]" />
+          <div className="absolute left-0 top-0 h-2 w-full bg-[linear-gradient(90deg,#00b8d9,#44e0a0,#f8d66d)]" />
+
+          <div className="relative mx-auto w-full max-w-3xl">
+            <div className="flex items-center gap-5">
+              <div className="relative h-28 w-28 overflow-hidden rounded-3xl border border-cyan-200 bg-white shadow-xl shadow-cyan-100">
               <Image
                 src="/logo.png"
                 alt="GARUD AI"
                 fill
-                sizes="96px"
-                className="object-contain p-2"
+                sizes="112px"
+                className="object-contain p-3"
                 priority
               />
             </div>
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.22em] text-cyan-700">
-                Invite-only Transport OS
+              <p className="text-sm font-black uppercase tracking-[0.24em] text-cyan-700">
+                Invite-only transporter ERP
               </p>
-              <h1 className="mt-2 text-5xl font-black tracking-tight">
+              <h1 className="mt-2 text-6xl font-black tracking-tight">
                 GARUD AI
               </h1>
             </div>
           </div>
 
-          <h2 className="mt-10 max-w-3xl text-4xl font-black leading-tight">
-            One secure workspace for each transporter, fleet, branch, and owner.
+          <h2 className="mt-12 max-w-4xl text-5xl font-black leading-[1.02] tracking-tight">
+            Transport operations, finance, fleet, and AI safety in one secure
+            workspace.
           </h2>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-            Login with the credentials issued during customer onboarding. Every
-            customer receives a fresh GARUD ID and a clean ERP workspace.
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            Each customer gets a private GARUD ID, clean ERP data, live command
+            modules, and owner-controlled access from day one.
           </p>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            {["Fleet ERP", "AI Safety", "Finance Control"].map((item) => (
+          <div className="mt-9 grid gap-3 sm:grid-cols-3">
+            {[
+              ["Fleet ERP", "Vehicles, drivers, trips"],
+              ["AI Safety", "Dashcam risk events"],
+              ["Finance", "Invoices, fuel, receivables"],
+            ].map(([title, copy]) => (
               <div
-                key={item}
-                className="rounded-lg border border-cyan-100 bg-white p-4 text-sm font-bold shadow-sm"
+                key={title}
+                className="rounded-xl border border-cyan-100 bg-white p-5 shadow-sm"
               >
-                {item}
+                <p className="text-sm font-black">{title}</p>
+                <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">
+                  {copy}
+                </p>
               </div>
             ))}
           </div>
+
+            <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl shadow-cyan-100/60">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-700">
+                    Live command preview
+                  </p>
+                  <p className="mt-1 text-lg font-black">Owner control room</p>
+                </div>
+                <span className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700">
+                  Online
+                </span>
+              </div>
+
+              <div className="grid gap-3 pt-4 sm:grid-cols-3">
+                {[
+                  ["Active trips", "42"],
+                  ["Open alerts", "7"],
+                  ["Today revenue", "INR 8.4L"],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-xl bg-slate-50 p-4">
+                    <p className="text-xs font-bold text-slate-500">{label}</p>
+                    <p className="mt-2 text-2xl font-black">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
 
+        <section className="flex items-center justify-center bg-white px-6 py-10 sm:px-10 lg:px-14">
         <form
           onSubmit={handleLogin}
-          className="rounded-2xl border border-cyan-100 bg-white p-7 shadow-2xl shadow-cyan-100/70"
+            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl shadow-slate-200/80"
         >
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-cyan-700">
-            Customer login
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">
+              Secure access
           </p>
-          <h3 className="mt-3 text-2xl font-black">Enter your workspace</h3>
+            <h3 className="mt-3 text-3xl font-black">Login to GARUD AI</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Use your super-admin or customer owner credentials.
+            </p>
 
           <label className="mt-7 block text-sm font-bold text-slate-700">
             Email
@@ -96,7 +140,7 @@ export default function LoginClient() {
               onChange={(event) => setEmail(event.target.value)}
               type="email"
               required
-              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none focus:border-cyan-500 focus:bg-white"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-950 outline-none transition focus:border-cyan-500 focus:bg-white"
               placeholder="owner@company.com"
             />
           </label>
@@ -108,7 +152,7 @@ export default function LoginClient() {
               onChange={(event) => setPassword(event.target.value)}
               type="password"
               required
-              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none focus:border-cyan-500 focus:bg-white"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-950 outline-none transition focus:border-cyan-500 focus:bg-white"
               placeholder="Issued password"
             />
           </label>
@@ -122,21 +166,22 @@ export default function LoginClient() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-lg bg-cyan-500 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-6 w-full rounded-xl bg-cyan-500 px-5 py-4 text-sm font-black text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Checking access..." : "Login"}
           </button>
 
-          <p className="mt-5 text-center text-sm text-slate-500">
-            No public signup. New customers are created by GARUD AI admin.
+            <p className="mt-5 text-center text-xs font-semibold leading-5 text-slate-500">
+              No public signup. Customer portals are created from Super Admin.
           </p>
           <a
             href="/super-admin/setup"
-            className="mt-3 block text-center text-sm font-black text-cyan-800"
+              className="mt-4 block text-center text-sm font-black text-cyan-800"
           >
             First-time super admin setup
           </a>
         </form>
+        </section>
       </div>
     </main>
   );
