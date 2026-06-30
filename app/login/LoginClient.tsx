@@ -1,13 +1,41 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function LoginClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [setupAllowed, setSetupAllowed] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function checkSetup() {
+      try {
+        const response = await fetch("/api/admin/super-setup", {
+          cache: "no-store",
+        });
+        const result = await response.json();
+
+        if (mounted) {
+          setSetupAllowed(Boolean(result.setupAllowed));
+        }
+      } catch {
+        if (mounted) {
+          setSetupAllowed(false);
+        }
+      }
+    }
+
+    checkSetup();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -174,12 +202,14 @@ export default function LoginClient() {
             <p className="mt-5 text-center text-xs font-semibold leading-5 text-slate-500">
               No public signup. Customer portals are created from Super Admin.
           </p>
-          <a
-            href="/super-admin/setup"
-              className="mt-4 block text-center text-sm font-black text-cyan-800"
-          >
-            First-time super admin setup
-          </a>
+            {setupAllowed ? (
+              <a
+                href="/super-admin/setup"
+                className="mt-4 block text-center text-sm font-black text-cyan-800"
+              >
+                First-time super admin setup
+              </a>
+            ) : null}
         </form>
         </section>
       </div>

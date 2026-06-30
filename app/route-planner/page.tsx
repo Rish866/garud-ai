@@ -2,15 +2,17 @@ import AppLayout from "../components/AppLayout";
 import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function RoutePlannerPage() {
   const supabase = createSupabaseAdminClient();
-  const { data: routePlans } = await supabase
-    .from("erp_route_plans")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: routePlans } = await filterByTenant(
+    supabase.from("erp_route_plans").select("*").order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (routePlans || []).map((route) => [
     route.lane_label,
     route.origin,

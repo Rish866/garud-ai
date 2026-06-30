@@ -3,16 +3,21 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { complianceModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function MaintenanceCenterPage() {
   const config = complianceModules["maintenance-center"];
   const supabase = createSupabaseAdminClient();
-  const { data: jobs } = await supabase
-    .from("erp_maintenance_jobs")
-    .select("*")
-    .order("opened_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: jobs } = await filterByTenant(
+    supabase
+      .from("erp_maintenance_jobs")
+      .select("*")
+      .order("opened_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (jobs || []).map((job) => [
     job.vehicle_label,
     job.issue,

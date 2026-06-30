@@ -2,15 +2,18 @@ import AppLayout from "../components/AppLayout";
 import ModuleActions from "../components/erp/ModuleActions";
 import VehicleTable from "../components/VehicleTable";
 import { erpModules } from "../lib/erpModuleConfigs";
-import { supabase } from "../lib/supabase";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function VehiclesPage() {
-  const { data: vehicles } = await supabase
-    .from("vehicles")
-    .select("*")
-    .order("id", { ascending: false });
+  const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
+  const { data: vehicles } = await filterByTenant(
+    supabase.from("vehicles").select("*").order("id", { ascending: false }),
+    tenantId,
+  );
 
   const rows = (vehicles || []).map((vehicle) => [
     vehicle.vehicle_number || `Vehicle ${vehicle.id}`,
@@ -44,7 +47,7 @@ export default async function VehiclesPage() {
           reports={erpModules.vehicles.reports}
         />
 
-        <VehicleTable vehicles={vehicles || []} />
+        <VehicleTable vehicles={(vehicles || []) as any} />
       </div>
     </AppLayout>
   );

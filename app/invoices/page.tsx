@@ -3,16 +3,18 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { financeModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function InvoicesPage() {
   const config = financeModules.invoices;
   const supabase = createSupabaseAdminClient();
-  const { data: invoices } = await supabase
-    .from("invoices")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: invoices } = await filterByTenant(
+    supabase.from("invoices").select("*").order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (invoices || []).map((invoice) => [
     invoice.invoice_number || `INV-${invoice.id}`,
     invoice.trip_id || "-",

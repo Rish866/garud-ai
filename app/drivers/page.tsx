@@ -2,14 +2,23 @@ import AppLayout from "../components/AppLayout";
 import DriverTable from "../components/DriverTable";
 import ModuleActions from "../components/erp/ModuleActions";
 import { erpModules } from "../lib/erpModuleConfigs";
-import { supabase } from "../lib/supabase";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function DriversPage() {
+  const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
   const [{ data: drivers }, { data: vehicles }] = await Promise.all([
-    supabase.from("drivers").select("*").order("id", { ascending: false }),
-    supabase.from("vehicles").select("id, vehicle_number").order("id"),
+    filterByTenant(
+      supabase.from("drivers").select("*").order("id", { ascending: false }),
+      tenantId,
+    ),
+    filterByTenant(
+      supabase.from("vehicles").select("id, vehicle_number").order("id"),
+      tenantId,
+    ),
   ]);
 
   const rows = (drivers || []).map((driver) => [
@@ -41,7 +50,7 @@ export default async function DriversPage() {
           reports={erpModules.drivers.reports}
         />
 
-        <DriverTable drivers={drivers || []} vehicles={vehicles || []} />
+        <DriverTable drivers={(drivers || []) as any} vehicles={(vehicles || []) as any} />
       </div>
     </AppLayout>
   );

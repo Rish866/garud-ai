@@ -3,16 +3,21 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { safetyModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function VideoRequestsPage() {
   const config = safetyModules["video-requests"];
   const supabase = createSupabaseAdminClient();
-  const { data: requests } = await supabase
-    .from("erp_video_requests")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: requests } = await filterByTenant(
+    supabase
+      .from("erp_video_requests")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (requests || []).map((request) => [
     request.vehicle_label,
     request.trip_label || "-",

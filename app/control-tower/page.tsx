@@ -1,15 +1,17 @@
 import AppLayout from "../components/AppLayout";
 import IssueTowerClient from "../components/workflow/IssueTowerClient";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function ControlTowerPage() {
   const supabase = createSupabaseAdminClient();
-  const { data: issues } = await supabase
-    .from("erp_issues")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: issues } = await filterByTenant(
+    supabase.from("erp_issues").select("*").order("created_at", { ascending: false }),
+    tenantId,
+  );
 
   const openIssues = (issues || []).filter((issue) => issue.status !== "closed");
   const critical = openIssues.filter((issue) => issue.severity === "critical").length;
@@ -52,7 +54,7 @@ export default async function ControlTowerPage() {
           ))}
         </section>
 
-        <IssueTowerClient initialIssues={issues || []} />
+        <IssueTowerClient initialIssues={(issues || []) as any} />
       </div>
     </AppLayout>
   );

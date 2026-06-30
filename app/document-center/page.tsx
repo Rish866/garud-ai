@@ -3,16 +3,18 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { complianceModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function DocumentCenterPage() {
   const config = complianceModules["document-center"];
   const supabase = createSupabaseAdminClient();
-  const { data: documents } = await supabase
-    .from("erp_documents")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: documents } = await filterByTenant(
+    supabase.from("erp_documents").select("*").order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (documents || []).map((doc) => [
     doc.entity_label,
     doc.document_type,

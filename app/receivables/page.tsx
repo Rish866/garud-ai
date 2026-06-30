@@ -1,6 +1,7 @@
 import AppLayout from "../components/AppLayout";
 import ModuleActions from "../components/erp/ModuleActions";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 function money(value: number) {
   return `INR ${value.toLocaleString("en-IN")}`;
@@ -10,9 +11,13 @@ export const dynamic = "force-dynamic";
 
 export default async function ReceivablesPage() {
   const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
   const [{ data: invoices }, { data: payments }] = await Promise.all([
-    supabase.from("invoices").select("*").order("created_at", { ascending: false }),
-    supabase.from("payments").select("*"),
+    filterByTenant(
+      supabase.from("invoices").select("*").order("created_at", { ascending: false }),
+      tenantId,
+    ),
+    filterByTenant(supabase.from("payments").select("*"), tenantId),
   ]);
   const today = Date.now();
   const customerReceivables = (invoices || []).map((invoice) => {

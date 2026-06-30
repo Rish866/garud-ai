@@ -2,21 +2,33 @@ import AppLayout from "../components/AppLayout";
 import TripTable from "../components/TripTable";
 import ModuleActions from "../components/erp/ModuleActions";
 import { erpModules } from "../lib/erpModuleConfigs";
-import { supabase } from "../lib/supabase";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function TripsPage() {
+  const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
   const [
     { data: trips },
     { data: customers },
     { data: vehicles },
     { data: drivers },
   ] = await Promise.all([
-    supabase.from("trips").select("*").order("id", { ascending: false }),
-    supabase.from("customers").select("id, company_name").order("id"),
-    supabase.from("vehicles").select("id, vehicle_number").order("id"),
-    supabase.from("drivers").select("id, name").order("id"),
+    filterByTenant(
+      supabase.from("trips").select("*").order("id", { ascending: false }),
+      tenantId,
+    ),
+    filterByTenant(
+      supabase.from("customers").select("id, company_name").order("id"),
+      tenantId,
+    ),
+    filterByTenant(
+      supabase.from("vehicles").select("id, vehicle_number").order("id"),
+      tenantId,
+    ),
+    filterByTenant(supabase.from("drivers").select("id, name").order("id"), tenantId),
   ]);
 
   const rows = (trips || []).map((trip) => [
@@ -50,10 +62,10 @@ export default async function TripsPage() {
         />
 
         <TripTable
-          trips={trips || []}
-          customers={customers || []}
-          vehicles={vehicles || []}
-          drivers={drivers || []}
+          trips={(trips || []) as any}
+          customers={(customers || []) as any}
+          vehicles={(vehicles || []) as any}
+          drivers={(drivers || []) as any}
         />
       </div>
     </AppLayout>

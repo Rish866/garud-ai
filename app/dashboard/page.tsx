@@ -13,6 +13,8 @@ import {
   transporterKPIs,
 } from "../lib/demoData";
 import { ownerPriorityNotifications, toneClass as notificationToneClass } from "../lib/actionRoutes";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 function money(value: number) {
   return `INR ${value.toLocaleString("en-IN")}`;
@@ -32,22 +34,94 @@ function statusClass(status: string) {
   return "border-emerald-400/30 bg-emerald-400/10 text-emerald-200";
 }
 
-export default function DashboardPage() {
-  const activeVehicles = demoVehicles.filter(
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
+  const [{ data: tenantVehicles }, { data: tenantTrips }, { data: tenantDrivers }] =
+    await Promise.all([
+      filterByTenant(supabase.from("vehicles").select("*").order("id"), tenantId),
+      filterByTenant(supabase.from("trips").select("*").order("id"), tenantId),
+      filterByTenant(supabase.from("drivers").select("*").order("id"), tenantId),
+    ]);
+
+  const vehicles = tenantId
+    ? (tenantVehicles || []).map((vehicle) => ({
+        id: Number(vehicle.id),
+        vehicle_number: vehicle.vehicle_number || `Vehicle ${vehicle.id}`,
+        driver_id: vehicle.driver_id ? Number(vehicle.driver_id) : undefined,
+        customer_id: vehicle.customer_id ? Number(vehicle.customer_id) : undefined,
+        driver_name: vehicle.driver_name || undefined,
+        status: vehicle.status || "idle",
+        latitude: Number(vehicle.latitude || 19.076),
+        longitude: Number(vehicle.longitude || 72.8777),
+        location: vehicle.location || "Not tracked yet",
+        speed: Number(vehicle.speed || 0),
+        cameras: Number(vehicle.cameras || 0),
+        alerts: Number(vehicle.alerts || 0),
+        route: vehicle.route || "No active route",
+        mode: vehicle.mode || vehicle.vehicle_type || "Fleet",
+        health: Number(vehicle.health || 0),
+      }))
+    : demoVehicles;
+  const trips = tenantId
+    ? (tenantTrips || []).map((trip) => ({
+        id: Number(trip.id),
+        origin: trip.origin || "-",
+        destination: trip.destination || "-",
+        revenue: Number(trip.revenue || 0),
+        expenses: Number(trip.expenses || 0),
+        profit: Number(trip.profit || 0),
+        distanceKm: Number(trip.distance_km || trip.distanceKm || 0),
+        eta: trip.eta || "-",
+        status: trip.status || "pending",
+        vehicle_id: trip.vehicle_id ? Number(trip.vehicle_id) : undefined,
+        driver_id: trip.driver_id ? Number(trip.driver_id) : undefined,
+        customer_id: trip.customer_id ? Number(trip.customer_id) : undefined,
+      }))
+    : demoTrips;
+  const drivers = tenantId
+    ? (tenantDrivers || []).map((driver) => ({
+        id: Number(driver.id),
+        name: driver.name || `Driver ${driver.id}`,
+        phone: driver.phone || undefined,
+        safety_score: Number(driver.safety_score || 0),
+        status: driver.status || "available",
+      }))
+    : demoDrivers;
+  const scopedDispatchBoard = tenantId ? [] : dispatchBoard;
+  const scopedReceivableAging = tenantId ? [] : receivableAging;
+  const scopedComplianceQueue = tenantId ? [] : complianceQueue;
+  const scopedMaintenanceQueue = tenantId ? [] : maintenanceQueue;
+  const scopedCommandEvents = tenantId ? [] : commandEvents;
+  const scopedPriorityNotifications = tenantId ? [] : ownerPriorityNotifications;
+  const scopedKPIs = tenantId
+    ? {
+        cashInBank: 0,
+        receivables: 0,
+        openInvoices: 0,
+        fuelSpend: 0,
+        utilization: 0,
+        emptyKm: 0,
+      }
+    : transporterKPIs;
+
+  const activeVehicles = vehicles.filter(
     (vehicle) => vehicle.status === "active"
   ).length;
-  const runningTrips = demoTrips.filter((trip) => trip.status === "running");
-  const revenueToday = demoTrips.reduce((sum, trip) => sum + trip.revenue, 0);
-  const profitToday = demoTrips.reduce(
+  const runningTrips = trips.filter((trip) => trip.status === "running");
+  const revenueToday = trips.reduce((sum, trip) => sum + trip.revenue, 0);
+  const profitToday = trips.reduce(
     (sum, trip) => sum + Number(trip.profit || 0),
     0
   );
-  const openAlerts = demoVehicles.reduce(
+  const openAlerts = vehicles.reduce(
     (sum, vehicle) => sum + vehicle.alerts,
     0
   );
 
-  const profitPercent = Math.round((profitToday / revenueToday) * 100);
+  const profitPercent = revenueToday ? Math.round((profitToday / revenueToday) * 100) : 0;
 
   return (
     <AppLayout>
@@ -70,7 +144,7 @@ export default function DashboardPage() {
                 {[
                   ["Revenue today", money(revenueToday), "Booked trips"],
                   ["Net profit", money(profitToday), `${profitPercent}% margin`],
-                  ["Active vehicles", `${activeVehicles}/${demoVehicles.length}`, "Live on road"],
+                  ["Active vehicles", `${activeVehicles}/${vehicles.length}`, "Live on road"],
                   ["Open AI alerts", openAlerts, "Needs review"],
                 ].map(([label, value, hint]) => (
                   <div
@@ -103,7 +177,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="mt-4 space-y-3">
-                {ownerPriorityNotifications.map((item, index) => (
+                {scopedPriorityNotifications.map((item, index) => (
                   <Link
                     key={item.title}
                     href={item.href}
@@ -134,6 +208,11 @@ export default function DashboardPage() {
                     </div>
                   </Link>
                 ))}
+                {!scopedPriorityNotifications.length ? (
+                  <div className="rounded-md border border-cyan-100 bg-sky-50/70 p-4 text-sm font-semibold text-slate-500">
+                    No customer alerts yet. New workspace is clean.
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -141,10 +220,10 @@ export default function DashboardPage() {
 
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Cash in bank", money(transporterKPIs.cashInBank), "Available for fuel and advances"],
-            ["Receivables", money(transporterKPIs.receivables), `${transporterKPIs.openInvoices} open invoices`],
-            ["Fuel spend", money(transporterKPIs.fuelSpend), "Month to date"],
-            ["Utilization", `${transporterKPIs.utilization}%`, `${transporterKPIs.emptyKm}% empty km`],
+            ["Cash in bank", money(scopedKPIs.cashInBank), "Available for fuel and advances"],
+            ["Receivables", money(scopedKPIs.receivables), `${scopedKPIs.openInvoices} open invoices`],
+            ["Fuel spend", money(scopedKPIs.fuelSpend), "Month to date"],
+            ["Utilization", `${scopedKPIs.utilization}%`, `${scopedKPIs.emptyKm}% empty km`],
           ].map(([label, value, hint]) => (
             <div
               key={label}
@@ -175,7 +254,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid gap-3 lg:grid-cols-2">
-              {dispatchBoard.map((lane) => (
+              {scopedDispatchBoard.map((lane) => (
                   <Link
                     key={lane.lane}
                     href={`/route-planner?lane=${encodeURIComponent(lane.lane)}`}
@@ -200,6 +279,11 @@ export default function DashboardPage() {
                   </div>
                   </Link>
                 ))}
+              {!scopedDispatchBoard.length ? (
+                <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-400">
+                  No lanes yet. Create the first trip or route plan.
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -209,7 +293,7 @@ export default function DashboardPage() {
               Collections view before allowing more credit.
             </p>
             <div className="mt-5 space-y-3">
-              {receivableAging.map((row) => (
+              {scopedReceivableAging.map((row) => (
                 <Link key={row.bucket} href="/receivables" className="block rounded-md p-2 transition hover:bg-cyan-400/10">
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="text-slate-300">{row.bucket}</span>
@@ -230,23 +314,28 @@ export default function DashboardPage() {
                   </p>
                 </Link>
               ))}
+              {!scopedReceivableAging.length ? (
+                <div className="rounded-md border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-400">
+                  No invoices yet. Receivables start at zero.
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
 
         <section className="mb-6 grid gap-4 xl:grid-cols-3">
           <div className="xl:col-span-2">
-            <DashboardLiveMap vehicles={demoVehicles} />
+            <DashboardLiveMap vehicles={vehicles} />
           </div>
 
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-5">
             <h2 className="text-xl font-bold">Active Trips</h2>
             <div className="mt-4 space-y-3">
               {runningTrips.map((trip) => {
-                const vehicle = demoVehicles.find(
+                const vehicle = vehicles.find(
                   (item) => item.id === trip.vehicle_id
                 );
-                const driver = demoDrivers.find(
+                const driver = drivers.find(
                   (item) => item.id === trip.driver_id
                 );
 
@@ -268,6 +357,11 @@ export default function DashboardPage() {
                   </Link>
                 );
               })}
+              {!runningTrips.length ? (
+                <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-400">
+                  No active trips yet.
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
@@ -276,7 +370,7 @@ export default function DashboardPage() {
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-5">
             <h2 className="text-xl font-bold">Compliance Queue</h2>
             <div className="mt-4 space-y-3">
-              {complianceQueue.map((item) => (
+              {scopedComplianceQueue.map((item) => (
                 <Link
                   key={`${item.item}-${item.vehicle}`}
                   href={`/document-center?entity=${encodeURIComponent(item.vehicle)}`}
@@ -299,13 +393,18 @@ export default function DashboardPage() {
                   </div>
                 </Link>
               ))}
+              {!scopedComplianceQueue.length ? (
+                <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-400">
+                  No compliance alerts yet.
+                </div>
+              ) : null}
             </div>
           </div>
 
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-5">
             <h2 className="text-xl font-bold">Maintenance Queue</h2>
             <div className="mt-4 space-y-3">
-              {maintenanceQueue.map((item) => (
+              {scopedMaintenanceQueue.map((item) => (
                 <Link
                   key={`${item.vehicle}-${item.issue}`}
                   href={`/maintenance-center?vehicle=${encodeURIComponent(item.vehicle)}`}
@@ -333,13 +432,18 @@ export default function DashboardPage() {
                   </p>
                 </Link>
               ))}
+              {!scopedMaintenanceQueue.length ? (
+                <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-400">
+                  No maintenance jobs yet.
+                </div>
+              ) : null}
             </div>
           </div>
 
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-5">
             <h2 className="text-xl font-bold">AI Safety Feed</h2>
             <div className="mt-4 space-y-3">
-              {commandEvents.map((event) => (
+              {scopedCommandEvents.map((event) => (
                 <Link
                   key={`${event.vehicle}-${event.time}`}
                   href={`/safety-events?vehicle=${encodeURIComponent(event.vehicle)}`}
@@ -365,6 +469,11 @@ export default function DashboardPage() {
                   </p>
                 </Link>
               ))}
+              {!scopedCommandEvents.length ? (
+                <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-400">
+                  No AI safety events yet.
+                </div>
+              ) : null}
             </div>
           </div>
         </section>

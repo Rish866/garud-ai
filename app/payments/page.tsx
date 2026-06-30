@@ -3,16 +3,18 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { financeModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function PaymentsPage() {
   const config = financeModules.payments;
   const supabase = createSupabaseAdminClient();
-  const { data: payments } = await supabase
-    .from("payments")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: payments } = await filterByTenant(
+    supabase.from("payments").select("*").order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (payments || []).map((payment) => [
     payment.invoice_id || "-",
     payment.payment_date || "-",

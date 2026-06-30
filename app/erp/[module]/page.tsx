@@ -7,6 +7,7 @@ import {
   findArchitectureModule,
 } from "../../lib/erpArchitecture";
 import { createSupabaseAdminClient } from "../../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,15 @@ export default async function UniversalERPModulePage({
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from("erp_module_records")
-      .select("*")
-      .eq("module_key", module)
-      .order("created_at", { ascending: false });
+    const tenantId = await getTenantIdForData();
+    const { data, error } = await filterByTenant(
+      supabase
+        .from("erp_module_records")
+        .select("*")
+        .eq("module_key", module)
+        .order("created_at", { ascending: false }),
+      tenantId,
+    );
 
     if (error) {
       tableReady = false;

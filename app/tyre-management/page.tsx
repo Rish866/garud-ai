@@ -3,16 +3,21 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { complianceModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function TyreManagementPage() {
   const config = complianceModules["tyre-management"];
   const supabase = createSupabaseAdminClient();
-  const { data: tyres } = await supabase
-    .from("erp_tyre_records")
-    .select("*")
-    .order("recorded_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: tyres } = await filterByTenant(
+    supabase
+      .from("erp_tyre_records")
+      .select("*")
+      .order("recorded_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (tyres || []).map((tyre) => [
     tyre.vehicle_label,
     tyre.tyre_serial,

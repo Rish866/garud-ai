@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "./supabaseAdmin";
+import { withTenantId } from "./tenantData";
 
 export type AgentResult = {
   ok: boolean;
@@ -150,7 +151,7 @@ export async function processAgentText(message: string): Promise<AgentResult> {
 
   const { data, error } = await supabase
     .from("erp_module_records")
-    .insert({
+    .insert(await withTenantId({
       module_key: classification.moduleKey,
       record_type: classification.recordType,
       title,
@@ -161,7 +162,7 @@ export async function processAgentText(message: string): Promise<AgentResult> {
       status: classification.status || "open",
       notes: message,
       created_by: "garud-agent",
-    })
+    }))
     .select("id")
     .single();
 
@@ -176,7 +177,7 @@ export async function processAgentText(message: string): Promise<AgentResult> {
     };
   }
 
-  await supabase.from("erp_action_log").insert({
+  await supabase.from("erp_action_log").insert(await withTenantId({
     module_key: classification.moduleKey,
     module_title: "GARUD AI Agent",
     record_label: title,
@@ -185,7 +186,7 @@ export async function processAgentText(message: string): Promise<AgentResult> {
     note: message,
     assigned_to: "Ops admin",
     created_by: "garud-agent",
-  });
+  }));
 
   return {
     ok: true,
@@ -229,14 +230,14 @@ export async function processAgentFile(file: File, note: string): Promise<AgentR
 
   const { data: document, error: documentError } = await supabase
     .from("erp_documents")
-    .insert({
+    .insert(await withTenantId({
       entity_type: vehicle ? "vehicle" : "general",
       entity_label: vehicle || "Unassigned",
       document_type: classification.documentType || "Uploaded Document",
       document_number: firstMatch(note, /(?:no|number|#)\s*([A-Z0-9-]+)/i) || null,
       file_url: path,
       status: "pending",
-    })
+    }))
     .select("id")
     .single();
 
@@ -253,7 +254,7 @@ export async function processAgentFile(file: File, note: string): Promise<AgentR
 
   const { data: moduleRecord } = await supabase
     .from("erp_module_records")
-    .insert({
+    .insert(await withTenantId({
       module_key: classification.moduleKey,
       record_type: classification.recordType,
       title: `${classification.title}: ${file.name}`,
@@ -262,11 +263,11 @@ export async function processAgentFile(file: File, note: string): Promise<AgentR
       status: "pending",
       notes: note || `Uploaded file ${file.name}`,
       created_by: "garud-agent",
-    })
+    }))
     .select("id")
     .single();
 
-  await supabase.from("erp_action_log").insert({
+  await supabase.from("erp_action_log").insert(await withTenantId({
     module_key: classification.moduleKey,
     module_title: "GARUD AI Agent",
     record_label: file.name,
@@ -275,7 +276,7 @@ export async function processAgentFile(file: File, note: string): Promise<AgentR
     note: note || "File uploaded through GARUD AI Agent",
     assigned_to: "Docs team",
     created_by: "garud-agent",
-  });
+  }));
 
   return {
     ok: true,

@@ -3,16 +3,21 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { safetyModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function SafetyEventsPage() {
   const config = safetyModules["safety-events"];
   const supabase = createSupabaseAdminClient();
-  const { data: events } = await supabase
-    .from("erp_safety_events")
-    .select("*")
-    .order("occurred_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: events } = await filterByTenant(
+    supabase
+      .from("erp_safety_events")
+      .select("*")
+      .order("occurred_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (events || []).map((event) => [
     event.event_type,
     event.vehicle_label,

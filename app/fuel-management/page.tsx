@@ -3,16 +3,18 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { financeModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function FuelManagementPage() {
   const config = financeModules["fuel-management"];
   const supabase = createSupabaseAdminClient();
-  const { data: fuelLogs } = await supabase
-    .from("fuel_logs")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: fuelLogs } = await filterByTenant(
+    supabase.from("fuel_logs").select("*").order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (fuelLogs || []).map((fuel) => [
     fuel.vehicle_id || "-",
     fuel.trip_id || "-",

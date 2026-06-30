@@ -2,15 +2,20 @@ import AppLayout from "../components/AppLayout";
 import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function BillingPacksPage() {
   const supabase = createSupabaseAdminClient();
-  const { data: packs } = await supabase
-    .from("erp_billing_packs")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: packs } = await filterByTenant(
+    supabase
+      .from("erp_billing_packs")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (packs || []).map((pack) => [
     pack.trip_label,
     pack.customer_label,

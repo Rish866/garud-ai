@@ -2,15 +2,18 @@ import AppLayout from "../components/AppLayout";
 import CustomerTable from "../components/CustomerTable";
 import ModuleActions from "../components/erp/ModuleActions";
 import { erpModules } from "../lib/erpModuleConfigs";
-import { supabase } from "../lib/supabase";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function CustomersPage() {
-  const { data: customers } = await supabase
-    .from("customers")
-    .select("*")
-    .order("id", { ascending: false });
+  const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
+  const { data: customers } = await filterByTenant(
+    supabase.from("customers").select("*").order("id", { ascending: false }),
+    tenantId,
+  );
 
   const rows = (customers || []).map((customer) => [
     customer.company_name || `Customer ${customer.id}`,
@@ -44,7 +47,7 @@ export default async function CustomersPage() {
           reports={erpModules.customers.reports}
         />
 
-        <CustomerTable customers={customers || []} />
+        <CustomerTable customers={(customers || []) as any} />
       </div>
     </AppLayout>
   );

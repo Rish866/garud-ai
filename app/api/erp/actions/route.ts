@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "../../../lib/supabaseAdmin";
+import { withTenantId } from "../../../lib/tenantData";
 
 type ActionBody = {
   moduleKey?: string;
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { error } = await supabase.from("erp_action_log").insert({
+    const { error } = await supabase.from("erp_action_log").insert(await withTenantId({
       module_key: body.moduleKey || body.moduleTitle,
       module_title: body.moduleTitle,
       record_label: body.recordLabel || null,
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
       assigned_to: body.actionType === "issue" ? "Control tower" : "Ops admin",
       status: body.actionType === "review" ? "reviewed" : "open",
       closed_at: body.actionType === "review" ? new Date().toISOString() : null,
-    });
+    }));
 
     if (error) {
       return NextResponse.json(
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     if (body.actionType === "issue") {
-      const { error: issueError } = await supabase.from("erp_issues").insert({
+      const { error: issueError } = await supabase.from("erp_issues").insert(await withTenantId({
         module_key: body.moduleKey || body.moduleTitle,
         record_label: body.recordLabel || null,
         severity: "medium",
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
         description: body.note || "Issue created from ERP action",
         owner: "Control tower",
         status: "open",
-      });
+      }));
 
       if (issueError) {
         return NextResponse.json(

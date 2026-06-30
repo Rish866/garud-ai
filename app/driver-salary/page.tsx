@@ -3,16 +3,21 @@ import DatabaseWorkbench from "../components/erp/DatabaseWorkbench";
 import ModuleActions from "../components/erp/ModuleActions";
 import { financeModules } from "../lib/erpModuleConfigs";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function DriverSalaryPage() {
   const config = financeModules["driver-salary"];
   const supabase = createSupabaseAdminClient();
-  const { data: settlements } = await supabase
-    .from("erp_driver_settlements")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data: settlements } = await filterByTenant(
+    supabase
+      .from("erp_driver_settlements")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    tenantId,
+  );
   const rows = (settlements || []).map((item) => [
     item.driver_label,
     item.period_label,

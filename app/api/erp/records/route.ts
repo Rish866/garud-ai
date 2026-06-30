@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { erpTableRequirements } from "../../../lib/erpSchema";
 import { createSupabaseAdminClient } from "../../../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData, withTenantId } from "../../../lib/tenantData";
 
 const allowedTables = new Set(erpTableRequirements.map((item) => item.table));
 
@@ -16,10 +17,11 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const table = getTable(url.searchParams.get("table"));
   const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from(table)
-    .select("*")
-    .order("created_at", { ascending: false });
+  const tenantId = await getTenantIdForData();
+  const { data, error } = await filterByTenant(
+    supabase.from(table).select("*").order("created_at", { ascending: false }),
+    tenantId,
+  );
 
   if (error) {
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
@@ -41,9 +43,10 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseAdminClient();
+  const scopedValues = await withTenantId(values);
   const { data, error } = await supabase
     .from(table)
-    .insert(values)
+    .insert(scopedValues)
     .select("*")
     .single();
 
@@ -66,10 +69,12 @@ export async function PATCH(request: Request) {
   }
 
   const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
   const { data, error } = await supabase
     .from(table)
     .update(body.values)
     .eq("id", body.id)
+    .eq("tenant_id", tenantId || "00000000-0000-0000-0000-000000000000")
     .select("*")
     .single();
 
@@ -92,7 +97,12 @@ export async function DELETE(request: Request) {
   }
 
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from(table).delete().eq("id", body.id);
+  const tenantId = await getTenantIdForData();
+  const { error } = await supabase
+    .from(table)
+    .delete()
+    .eq("id", body.id)
+    .eq("tenant_id", tenantId || "00000000-0000-0000-0000-000000000000");
 
   if (error) {
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });

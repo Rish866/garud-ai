@@ -1,16 +1,21 @@
 import AppLayout from "../components/AppLayout";
 import ModuleActions from "../components/erp/ModuleActions";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 
 export const dynamic = "force-dynamic";
 
 export default async function CustomerPortalPage() {
   const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
   const [{ data: trips }, { data: packs }, { data: invoices }] =
     await Promise.all([
-      supabase.from("trips").select("*").order("id", { ascending: false }),
-      supabase.from("erp_billing_packs").select("*"),
-      supabase.from("invoices").select("*"),
+      filterByTenant(
+        supabase.from("trips").select("*").order("id", { ascending: false }),
+        tenantId,
+      ),
+      filterByTenant(supabase.from("erp_billing_packs").select("*"), tenantId),
+      filterByTenant(supabase.from("invoices").select("*"), tenantId),
     ]);
   const shipments = (trips || []).map((trip) => {
     const pack = (packs || []).find(
