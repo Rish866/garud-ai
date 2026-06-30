@@ -38,9 +38,7 @@ export default function LivePlaybackPanel({
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-white">
-          Playback Search
-        </h2>
+        <h2 className="text-lg font-bold text-white">Playback Search</h2>
         <p className="text-sm text-slate-400">
           Search backdated clips and evidence
         </p>
@@ -89,6 +87,7 @@ export default function LivePlaybackPanel({
 
       <div className="mt-4 flex flex-wrap gap-3">
         <button
+          type="button"
           onClick={searchClips}
           className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500"
         >
@@ -96,6 +95,7 @@ export default function LivePlaybackPanel({
         </button>
 
         <button
+          type="button"
           onClick={() => alert("Evidence export request created")}
           className="rounded-xl bg-slate-800 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
         >
@@ -103,6 +103,7 @@ export default function LivePlaybackPanel({
         </button>
 
         <button
+          type="button"
           onClick={() => alert("Clip download started")}
           className="rounded-xl bg-slate-800 px-5 py-3 text-sm font-bold text-white hover:bg-slate-700"
         >
