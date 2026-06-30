@@ -1,120 +1,98 @@
 import AppLayout from "../components/AppLayout";
-import { supabase } from "../lib/supabase";
+import { demoVehicles, maintenanceQueue } from "../lib/demoData";
 
-export default async function VehicleRiskPage() {
-
-  const { data: vehicles } = await supabase
-    .from("vehicles")
-    .select("*");
-
-  const { data: safetyEvents } = await supabase
-    .from("safety_events")
-    .select("*");
-
-  const vehicleRiskData =
-    vehicles?.map((vehicle: any) => {
-
-      const vehicleEvents =
-        safetyEvents?.filter(
-          (event: any) =>
-            event.vehicle_id === vehicle.id
-        ) || [];
-
-      const totalEvents =
-        vehicleEvents.length;
-
-      let riskLevel = "Safe";
-
-      if (totalEvents >= 2) {
-        riskLevel = "High";
-      } else if (totalEvents === 1) {
-        riskLevel = "Medium";
-      }
-
-      return {
-        ...vehicle,
-        totalEvents,
-        riskLevel,
-      };
-
-    }) || [];
-
-  const sortedVehicles =
-    vehicleRiskData.sort(
-      (a: any, b: any) =>
-        b.totalEvents - a.totalEvents
-    );
+export default function VehicleRiskPage() {
+  const vehicles = [...demoVehicles].sort(
+    (a, b) => b.alerts + (100 - b.health) - (a.alerts + (100 - a.health))
+  );
 
   return (
     <AppLayout>
+      <div className="min-h-screen bg-[#05070d] text-white">
+        <section className="mb-6 rounded-lg border border-white/10 bg-slate-900/80 p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-amber-300">
+            Vehicle risk
+          </p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight">
+            Top Risk Vehicles
+          </h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+            Rank vehicles by health, AI events, camera coverage, maintenance
+            exposure, and dispatch restriction status.
+          </p>
+        </section>
 
-      <h1 className="text-4xl font-bold text-red-500 mb-8">
-        🚗 Top Risk Vehicles
-      </h1>
+        <section className="grid gap-4">
+          {vehicles.map((vehicle, index) => {
+            const openIssue = maintenanceQueue.find(
+              (item) => item.vehicle === vehicle.vehicle_number
+            );
+            const score = Math.max(0, vehicle.health - vehicle.alerts * 6);
+            const level =
+              score < 75 ? "High risk" : score < 88 ? "Watchlist" : "Safe";
 
-      <div className="bg-slate-900 rounded-xl p-6">
-
-        <h2 className="text-2xl font-bold mb-6">
-          Vehicle Risk Ranking
-        </h2>
-
-        <div className="space-y-4">
-
-          {sortedVehicles.map(
-            (vehicle: any) => (
-
+            return (
               <div
                 key={vehicle.id}
-                className="border border-slate-700 rounded-lg p-4 flex justify-between items-center"
+                className="rounded-lg border border-slate-800 bg-slate-900/80 p-5"
               >
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex gap-4">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-950 text-sm font-black text-cyan-300">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h2 className="text-xl font-black text-white">
+                        {vehicle.vehicle_number}
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-400">
+                        {vehicle.route} | {vehicle.driver_name}
+                      </p>
+                    </div>
+                  </div>
 
-                <div>
-                  <h3 className="text-xl font-bold">
-                    {vehicle.vehicle_number}
-                  </h3>
-
-                  <p className="text-slate-400">
-                    Total Events:
-                    {" "}
-                    {vehicle.totalEvents}
-                  </p>
+                  <span
+                    className={`rounded-md px-3 py-1 text-xs font-bold ${
+                      level === "High risk"
+                        ? "bg-rose-400/10 text-rose-200"
+                        : level === "Watchlist"
+                        ? "bg-amber-400/10 text-amber-200"
+                        : "bg-emerald-400/10 text-emerald-200"
+                    }`}
+                  >
+                    {level}
+                  </span>
                 </div>
 
-                <div>
-
-                  {vehicle.riskLevel ===
-                  "High" ? (
-                    <span className="bg-red-600 px-4 py-2 rounded-lg">
-                      🔴 HIGH RISK
-                    </span>
-                  ) : vehicle.riskLevel ===
-                    "Medium" ? (
-                    <span className="bg-yellow-600 px-4 py-2 rounded-lg">
-                      🟡 MEDIUM
-                    </span>
-                  ) : (
-                    <span className="bg-green-600 px-4 py-2 rounded-lg">
-                      🟢 SAFE
-                    </span>
-                  )}
-
+                <div className="mt-5 grid gap-3 md:grid-cols-4">
+                  {[
+                    ["Risk score", `${score}/100`],
+                    ["Health", `${vehicle.health}%`],
+                    ["AI alerts", vehicle.alerts],
+                    ["Cameras", `${vehicle.cameras}/4`],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                    >
+                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="mt-2 text-xl font-black text-white">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
 
+                {openIssue && (
+                  <div className="mt-4 rounded-lg border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-100">
+                    Open issue: {openIssue.issue}. Priority {openIssue.priority}.
+                  </div>
+                )}
               </div>
-
-            )
-          )}
-
-          {sortedVehicles.length === 0 && (
-            <p className="text-yellow-400">
-              No vehicles found.
-            </p>
-          )}
-
-        </div>
-
+            );
+          })}
+        </section>
       </div>
-
     </AppLayout>
   );
 }

@@ -17,21 +17,18 @@ type Trip = {
 
 export default function DashboardRecentTrips({
   trips = [],
-  customers = [],
-  vehicles = [],
-  drivers = [],
 }: {
   trips?: Trip[];
-  customers?: any[];
-  vehicles?: any[];
-  drivers?: any[];
+  customers?: unknown[];
+  vehicles?: unknown[];
+  drivers?: unknown[];
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <div className="rounded-lg border border-slate-800 bg-slate-900 p-6">
       <div className="mb-5">
         <h2 className="text-xl font-semibold text-white">Recent Trips</h2>
         <p className="mt-1 text-sm text-slate-400">
-          Latest transport trips from Supabase.
+          Latest transport trips with demo data when the database is empty.
         </p>
       </div>
 
@@ -62,10 +59,10 @@ export default function DashboardRecentTrips({
                   {trip.destination || "-"}
                 </td>
                 <td className="py-4 text-green-400">
-                  ₹{Number(trip.revenue || 0).toLocaleString("en-IN")}
+                  INR {Number(trip.revenue || 0).toLocaleString("en-IN")}
                 </td>
                 <td className="py-4">
-                  <span className="rounded-full border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs text-blue-300">
+                  <span className="rounded-md border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs text-blue-300">
                     {trip.status || "Unknown"}
                   </span>
                 </td>

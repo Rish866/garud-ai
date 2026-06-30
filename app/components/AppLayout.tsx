@@ -5,56 +5,64 @@ const navSections = [
   {
     title: "Core",
     items: [
-      { name: "Dashboard", href: "/dashboard", icon: "📊" },
-      { name: "Live Fleet", href: "/fleet-map", icon: "🗺️" },
-      { name: "Live Monitoring", href: "/live", icon: "🎥" },
+      { name: "Dashboard", href: "/dashboard", icon: "DB" },
+      { name: "TMS Lifecycle", href: "/tms", icon: "TMS" },
+      { name: "Command Center", href: "/command-center", icon: "CC" },
+      { name: "Control Tower", href: "/control-tower", icon: "ISS" },
+      { name: "Route Planner", href: "/route-planner", icon: "RT" },
+      { name: "Reports", href: "/reports", icon: "RPT" },
+      { name: "Live Fleet", href: "/fleet-map", icon: "MAP" },
+      { name: "Live Monitoring", href: "/live", icon: "CAM" },
     ],
   },
   {
     title: "AI Safety",
     items: [
-      { name: "Safety Command Center", href: "/safety-center", icon: "🖥️" },
-      { name: "Safety Events", href: "/safety-events", icon: "🚨" },
-      { name: "Incident Clips", href: "/incidentclips", icon: "🎬" },
-      { name: "Video Archive", href: "/video-archive", icon: "📹" },
-      { name: "Video Search", href: "/video-search", icon: "🔎" },
-      { name: "Video Requests", href: "/video-requests", icon: "📤" },
-      { name: "Driver Safety Score", href: "/driver-score", icon: "🏆" },
-      { name: "Violation History", href: "/violation-history", icon: "⚠️" },
-      { name: "AI Risk Engine", href: "/risk-engine", icon: "🧠" },
-      { name: "Top Risk Vehicles", href: "/vehicle-risk", icon: "🚗" },
+      { name: "Safety Command Center", href: "/safety-center", icon: "SC" },
+      { name: "Safety Events", href: "/safety-events", icon: "AI" },
+      { name: "Incident Clips", href: "/incidentclips", icon: "CLP" },
+      { name: "Video Archive", href: "/video-archive", icon: "ARC" },
+      { name: "Video Search", href: "/video-search", icon: "SEA" },
+      { name: "Video Requests", href: "/video-requests", icon: "REQ" },
+      { name: "Driver App", href: "/driver-app", icon: "APP" },
+      { name: "Driver Safety Score", href: "/driver-score", icon: "SCO" },
+      { name: "Violation History", href: "/violation-history", icon: "VIO" },
+      { name: "AI Risk Engine", href: "/risk-engine", icon: "RISK" },
+      { name: "Top Risk Vehicles", href: "/vehicle-risk", icon: "TOP" },
     ],
   },
   {
     title: "Fleet ERP",
     items: [
-      { name: "Vehicles", href: "/vehicles", icon: "🚛" },
-      { name: "Drivers", href: "/drivers", icon: "👨‍✈️" },
-      { name: "Customers", href: "/customers", icon: "👥" },
-      { name: "Trips", href: "/trips", icon: "🛣️" },
-      { name: "Trip Expenses", href: "/trip-expenses", icon: "💸" },
+      { name: "Vehicles", href: "/vehicles", icon: "TRK" },
+      { name: "Drivers", href: "/drivers", icon: "DRV" },
+      { name: "Customers", href: "/customers", icon: "CUS" },
+      { name: "Customer Portal", href: "/customer-portal", icon: "PORT" },
+      { name: "Trips", href: "/trips", icon: "TRP" },
+      { name: "Trip Expenses", href: "/trip-expenses", icon: "EXP" },
     ],
   },
   {
     title: "Compliance",
     items: [
-      { name: "Maintenance Center", href: "/maintenance-center", icon: "🔧" },
-      { name: "Tyre Management", href: "/tyre-management", icon: "🛞" },
-      { name: "Maintenance Alerts", href: "/maintenance-alerts", icon: "🚨" },
-      { name: "Document Center", href: "/document-center", icon: "📄" },
-      { name: "Document Alerts", href: "/document-alerts", icon: "🚨" },
+      { name: "Maintenance Center", href: "/maintenance-center", icon: "MNT" },
+      { name: "Tyre Management", href: "/tyre-management", icon: "TYR" },
+      { name: "Maintenance Alerts", href: "/maintenance-alerts", icon: "ALT" },
+      { name: "Document Center", href: "/document-center", icon: "DOC" },
+      { name: "Document Alerts", href: "/document-alerts", icon: "DUE" },
     ],
   },
   {
     title: "Finance",
     items: [
-      { name: "Fuel Management", href: "/fuel-management", icon: "⛽" },
-      { name: "Driver Salary", href: "/driver-salary", icon: "👨‍✈️" },
-      { name: "Invoices", href: "/invoices", icon: "🧾" },
-      { name: "Payments", href: "/payments", icon: "💳" },
-      { name: "Receivables", href: "/receivables", icon: "📥" },
-      { name: "Vehicle Profitability", href: "/profitability", icon: "📈" },
-      { name: "Billing", href: "/billing", icon: "💰" },
+      { name: "Fuel Management", href: "/fuel-management", icon: "FUEL" },
+      { name: "Driver Salary", href: "/driver-salary", icon: "PAY" },
+      { name: "Invoices", href: "/invoices", icon: "INV" },
+      { name: "Billing Packs", href: "/billing-packs", icon: "POD" },
+      { name: "Payments", href: "/payments", icon: "PMT" },
+      { name: "Receivables", href: "/receivables", icon: "REC" },
+      { name: "Vehicle Profitability", href: "/profitability", icon: "ROI" },
+      { name: "Billing", href: "/billing", icon: "BIL" },
     ],
   },
 ];
@@ -65,27 +73,30 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white">
-      <aside className="sticky top-0 hidden h-screen w-80 shrink-0 overflow-y-auto border-r border-slate-800 bg-slate-900/95 xl:block">
-        <div className="border-b border-slate-800 p-6">
+    <div className="flex min-h-screen bg-[#05070d] text-white">
+      <aside className="sticky top-0 hidden h-screen w-96 shrink-0 overflow-y-auto border-r border-white/10 bg-[#07111f]/95 xl:block">
+        <div className="border-b border-white/10 p-6">
           <Link href="/dashboard" className="flex items-center gap-4">
-            <div className="relative h-16 w-16 overflow-hidden rounded-2xl bg-slate-800">
+            <div className="relative h-24 w-24 overflow-hidden rounded-xl border border-cyan-400/20 bg-white shadow-lg shadow-cyan-950/30">
               <Image
                 src="/logo.png"
                 alt="GARUD AI"
                 fill
-                sizes="64px"
-                className="object-contain p-1"
+                sizes="96px"
+                className="object-contain p-2"
                 priority
               />
             </div>
 
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-white">
+              <h1 className="text-3xl font-black tracking-tight text-white">
                 GARUD AI
               </h1>
-              <p className="text-sm text-slate-400">
-                Fleet Intelligence SaaS
+              <p className="mt-1 text-sm font-semibold text-cyan-200">
+                Transport OS
+              </p>
+              <p className="mt-2 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-xs font-bold text-emerald-300">
+                ERP + AI Safety
               </p>
             </div>
           </Link>
@@ -103,9 +114,11 @@ export default function AppLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                    className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm text-slate-300 transition hover:border-cyan-400/20 hover:bg-cyan-400/10 hover:text-white"
                   >
-                    <span className="text-base">{item.icon}</span>
+                    <span className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-950 text-[10px] font-black text-cyan-300">
+                      {item.icon}
+                    </span>
                     <span>{item.name}</span>
                   </Link>
                 ))}
@@ -116,22 +129,36 @@ export default function AppLayout({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 px-6 py-4 backdrop-blur">
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070d]/90 px-6 py-4 backdrop-blur">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold">Fleet Operations Center</h2>
+              <h2 className="text-xl font-black">Fleet Operations Center</h2>
               <p className="text-sm text-slate-400">
-                AI Dashcam Monitoring + GPS + Transport ERP
+                Dispatch, finance, compliance, GPS, and AI safety in one workflow
               </p>
             </div>
 
             <div className="hidden items-center gap-3 md:flex">
-              <div className="rounded-full bg-green-500/10 px-4 py-2 text-sm font-medium text-green-400">
-                ● System Online
+              <Link
+                href="/command-center"
+                className="rounded-md bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-300"
+              >
+                Command center
+              </Link>
+
+              <Link
+                href="/trips/add"
+                className="rounded-md border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-bold text-slate-200 hover:bg-white/10"
+              >
+                Create trip
+              </Link>
+
+              <div className="rounded-md bg-green-500/10 px-4 py-2 text-sm font-medium text-green-400">
+                System Online
               </div>
 
-              <div className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300">
-                👤 Admin
+              <div className="rounded-md border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300">
+                Admin
               </div>
             </div>
           </div>

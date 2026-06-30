@@ -3,70 +3,103 @@ import Link from "next/link";
 const actions = [
   {
     title: "Add Vehicle",
-    icon: "🚛",
+    code: "TRK",
     href: "/add-vehicle",
-    color: "bg-blue-600",
+    color: "bg-blue-600/20 text-blue-200",
   },
   {
     title: "Add Driver",
-    icon: "👨‍✈️",
+    code: "DRV",
     href: "/drivers/add",
-    color: "bg-green-600",
+    color: "bg-green-600/20 text-green-200",
+  },
+  {
+    title: "TMS Lifecycle",
+    code: "TMS",
+    href: "/tms",
+    color: "bg-cyan-600/20 text-cyan-200",
   },
   {
     title: "Create Trip",
-    icon: "🛣️",
+    code: "LOAD",
     href: "/trips/add",
-    color: "bg-purple-600",
+    color: "bg-cyan-600/20 text-cyan-200",
+  },
+  {
+    title: "Control Tower",
+    code: "ISS",
+    href: "/control-tower",
+    color: "bg-rose-600/20 text-rose-200",
+  },
+  {
+    title: "Route Planner",
+    code: "RT",
+    href: "/route-planner",
+    color: "bg-blue-600/20 text-blue-200",
   },
   {
     title: "New Customer",
-    icon: "👥",
+    code: "CUS",
     href: "/customers/add",
-    color: "bg-cyan-600",
+    color: "bg-indigo-600/20 text-indigo-200",
   },
   {
     title: "Fuel Entry",
-    icon: "⛽",
+    code: "FUEL",
     href: "/fuel/add",
-    color: "bg-orange-600",
+    color: "bg-amber-600/20 text-amber-200",
+  },
+  {
+    title: "Driver App",
+    code: "APP",
+    href: "/driver-app",
+    color: "bg-emerald-600/20 text-emerald-200",
+  },
+  {
+    title: "Customer Portal",
+    code: "PORT",
+    href: "/customer-portal",
+    color: "bg-indigo-600/20 text-indigo-200",
+  },
+  {
+    title: "Billing Pack",
+    code: "POD",
+    href: "/billing-packs",
+    color: "bg-violet-600/20 text-violet-200",
   },
   {
     title: "Maintenance",
-    icon: "🔧",
+    code: "MNT",
     href: "/maintenance/add",
-    color: "bg-red-600",
+    color: "bg-rose-600/20 text-rose-200",
   },
   {
     title: "Create Invoice",
-    icon: "🧾",
+    code: "INV",
     href: "/invoices/add",
-    color: "bg-indigo-600",
+    color: "bg-violet-600/20 text-violet-200",
   },
   {
     title: "Driver Salary",
-    icon: "💰",
+    code: "PAY",
     href: "/driver-salary/add",
-    color: "bg-emerald-600",
+    color: "bg-emerald-600/20 text-emerald-200",
   },
 ];
 
 export default function DashboardQuickActions() {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <div className="rounded-lg border border-slate-800 bg-slate-900 p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">
-            Quick Actions
-          </h2>
-
+          <h2 className="text-2xl font-bold">Quick Actions</h2>
           <p className="mt-1 text-slate-400">
-            Frequently used operational shortcuts.
+            Daily transporter operating shortcuts.
           </p>
         </div>
 
-        <div className="rounded-full bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-400">
-          8 Modules
+        <div className="rounded-md bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-300">
+          {actions.length} Modules
         </div>
       </div>
 
@@ -75,47 +108,19 @@ export default function DashboardQuickActions() {
           <Link
             key={action.title}
             href={action.href}
-            className="
-              group
-              rounded-2xl
-              border
-              border-slate-800
-              bg-slate-950
-              p-5
-              transition-all
-              duration-300
-              hover:-translate-y-1
-              hover:border-blue-500
-              hover:shadow-xl
-              hover:shadow-blue-500/10
-            "
+            className="group rounded-lg border border-slate-800 bg-slate-950 p-5 transition hover:border-cyan-500 hover:bg-slate-900"
           >
             <div
-              className={`
-                ${action.color}
-                mb-4
-                flex
-                h-14
-                w-14
-                items-center
-                justify-center
-                rounded-xl
-                text-3xl
-              `}
+              className={`mb-4 flex h-12 w-14 items-center justify-center rounded-md text-xs font-black ${action.color}`}
             >
-              {action.icon}
+              {action.code}
             </div>
 
-            <h3 className="font-semibold text-white">
-              {action.title}
-            </h3>
+            <h3 className="font-semibold text-white">{action.title}</h3>
+            <p className="mt-2 text-sm text-slate-500">Open module</p>
 
-            <p className="mt-2 text-sm text-slate-500">
-              Open module
-            </p>
-
-            <div className="mt-4 text-blue-400 transition-transform group-hover:translate-x-1">
-              →
+            <div className="mt-4 text-sm font-bold text-cyan-300 transition-transform group-hover:translate-x-1">
+              Open
             </div>
           </Link>
         ))}

@@ -1,309 +1,141 @@
 import AppLayout from "../components/AppLayout";
-import { supabase } from "../lib/supabase";
+import {
+  commandEvents,
+  demoDrivers,
+  demoVehicles,
+  reportCatalog,
+} from "../lib/demoData";
 
-export default async function SafetyCenterPage() {
-  const { data: events } = await supabase
-    .from("safety_events")
-    .select("*");
+function severityClass(severity: string) {
+  if (severity === "Critical") return "bg-rose-500/15 text-rose-200";
+  if (severity === "High") return "bg-amber-500/15 text-amber-200";
+  return "bg-cyan-500/15 text-cyan-200";
+}
 
-  const { data: drivers } = await supabase
-    .from("drivers")
-    .select("*");
-
-  const { data: vehicles } = await supabase
-    .from("vehicles")
-    .select("*");
-
-  const { data: clips } = await supabase
-    .from("incident_clips")
-    .select("*");
-
-  const totalEvents =
-    events?.length || 0;
-
-  const criticalEvents =
-    events?.filter(
-      (e: any) =>
-        e.severity === "Critical"
-    ).length || 0;
-
-  const highEvents =
-    events?.filter(
-      (e: any) =>
-        e.severity === "High"
-    ).length || 0;
-
-  const mediumEvents =
-    events?.filter(
-      (e: any) =>
-        e.severity === "Medium"
-    ).length || 0;
-
-  const totalDrivers =
-    drivers?.length || 0;
-
-  const totalVehicles =
-    vehicles?.length || 0;
-
-  const totalClips =
-    clips?.length || 0;
-
-  const driverEventMap: any = {};
-
-  events?.forEach((event: any) => {
-    if (!driverEventMap[event.driver_id]) {
-      driverEventMap[event.driver_id] = 0;
-    }
-
-    driverEventMap[event.driver_id]++;
-  });
-
-  const worstDriverId =
-    Object.keys(driverEventMap).sort(
-      (a, b) =>
-        driverEventMap[b] -
-        driverEventMap[a]
-    )[0];
-
-  const worstDriver =
-    drivers?.find(
-      (d: any) =>
-        d.id === Number(worstDriverId)
-    );
-
-  const vehicleEventMap: any = {};
-
-  events?.forEach((event: any) => {
-    if (!vehicleEventMap[event.vehicle_id]) {
-      vehicleEventMap[event.vehicle_id] = 0;
-    }
-
-    vehicleEventMap[event.vehicle_id]++;
-  });
-
-  const worstVehicleId =
-    Object.keys(vehicleEventMap).sort(
-      (a, b) =>
-        vehicleEventMap[b] -
-        vehicleEventMap[a]
-    )[0];
-
-  const worstVehicle =
-    vehicles?.find(
-      (v: any) =>
-        v.id === Number(worstVehicleId)
-    );
+export default function SafetyCenterPage() {
+  const averageScore = Math.round(
+    demoDrivers.reduce(
+      (sum, driver) => sum + Number(driver.safety_score || 0),
+      0
+    ) / demoDrivers.length
+  );
+  const eventCount = commandEvents.length;
+  const clipReports = reportCatalog.filter((report) =>
+    report.title.includes("Incident") || report.title.includes("Driver")
+  );
 
   return (
     <AppLayout>
-
-      <h1 className="text-4xl font-bold text-red-500 mb-8">
-        🖥️ Fleet Safety Command Center
-      </h1>
-
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Total Events
+      <div className="min-h-screen bg-[#05070d] text-white">
+        <section className="mb-6 rounded-lg border border-white/10 bg-slate-900/80 p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">
+            Safety command
           </p>
-
-          <h2 className="text-4xl font-bold text-yellow-400">
-            {totalEvents}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Critical Events
+          <h1 className="mt-3 text-4xl font-black tracking-tight">
+            Fleet Safety Center
+          </h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+            DMS, ADAS, driver coaching, evidence clips, claims readiness, and
+            safety score governance for transport operations.
           </p>
+        </section>
 
-          <h2 className="text-4xl font-bold text-red-500">
-            {criticalEvents}
-          </h2>
-        </div>
+        <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            ["Safety score", `${averageScore}/100`, "Fleet average"],
+            ["AI events", eventCount, "Open for review"],
+            ["Vehicles monitored", demoVehicles.length, "4CH ready fleet"],
+            ["Coaching packs", clipReports.length, "Ready to export"],
+          ].map(([label, value, hint]) => (
+            <div
+              key={label}
+              className="rounded-lg border border-slate-800 bg-slate-900/80 p-5"
+            >
+              <p className="text-sm text-slate-400">{label}</p>
+              <h2 className="mt-3 text-3xl font-black text-white">{value}</h2>
+              <p className="mt-2 text-sm text-slate-500">{hint}</p>
+            </div>
+          ))}
+        </section>
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            High Events
-          </p>
-
-          <h2 className="text-4xl font-bold text-orange-500">
-            {highEvents}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Medium Events
-          </p>
-
-          <h2 className="text-4xl font-bold text-yellow-500">
-            {mediumEvents}
-          </h2>
-        </div>
-
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Drivers
-          </p>
-
-          <h2 className="text-4xl font-bold text-blue-500">
-            {totalDrivers}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Vehicles
-          </p>
-
-          <h2 className="text-4xl font-bold text-green-500">
-            {totalVehicles}
-          </h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">
-            Incident Clips
-          </p>
-
-          <h2 className="text-4xl font-bold text-purple-500">
-            {totalClips}
-          </h2>
-        </div>
-
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-
-          <h2 className="text-2xl font-bold mb-4 text-red-400">
-            🚨 Worst Driver
-          </h2>
-
-          {worstDriver ? (
-            <>
-              <p className="text-2xl font-bold">
-                {worstDriver.name}
-              </p>
-
-              <p className="text-slate-400">
-                Total Events:{" "}
-                {
-                  driverEventMap[
-                    worstDriver.id
-                  ]
-                }
-              </p>
-            </>
-          ) : (
-            <p>No data</p>
-          )}
-
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-
-          <h2 className="text-2xl font-bold mb-4 text-orange-400">
-            🚛 Worst Vehicle
-          </h2>
-
-          {worstVehicle ? (
-            <>
-              <p className="text-2xl font-bold text-orange-400">
-                {
-                  worstVehicle.vehicle_number
-                }
-              </p>
-
-              <p className="text-slate-400">
-                Total Events:{" "}
-                {
-                  vehicleEventMap[
-                    worstVehicle.id
-                  ]
-                }
-              </p>
-            </>
-          ) : (
-            <p>No data</p>
-          )}
-
-        </div>
-
-      </div>
-
-      <div className="bg-slate-900 p-6 rounded-xl">
-
-        <h2 className="text-2xl font-bold mb-6">
-          Recent Safety Events
-        </h2>
-
-        <div className="space-y-4">
-
-          {events?.map(
-            (event: any) => {
-              const driver =
-                drivers?.find(
-                  (d: any) =>
-                    d.id ===
-                    event.driver_id
-                );
-
-              const vehicle =
-                vehicles?.find(
-                  (v: any) =>
-                    v.id ===
-                    event.vehicle_id
-                );
-
-              return (
+        <section className="mb-6 grid gap-4 xl:grid-cols-[1fr_0.9fr]">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-bold">Safety Event Review</h2>
+            <div className="mt-5 space-y-3">
+              {commandEvents.map((event) => (
                 <div
-                  key={event.id}
-                  className="flex justify-between border-b border-slate-800 pb-3"
+                  key={`${event.vehicle}-${event.time}`}
+                  className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
                 >
-                  <div>
-
-                    <p className="font-bold">
-                      {event.event_type}
-                    </p>
-
-                    <p className="text-slate-400 text-sm">
-                      Driver:{" "}
-                      {driver?.name ||
-                        "Unknown"}
-                    </p>
-
-                    <p className="text-slate-500 text-sm">
-                      Vehicle:{" "}
-                      {vehicle?.vehicle_number ||
-                        "Unknown"}
-                    </p>
-
-                  </div>
-
-                  <div>
-
-                    <span className="text-red-400">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="font-bold text-white">{event.title}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {event.vehicle} | {event.time}
+                      </p>
+                    </div>
+                    <span
+                      className={`rounded-md px-3 py-1 text-xs font-bold ${severityClass(
+                        event.severity
+                      )}`}
+                    >
                       {event.severity}
                     </span>
-
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-400">
+                    {event.detail}
+                  </p>
+                  <div className="mt-4 grid gap-2 text-xs text-slate-400 sm:grid-cols-3">
+                    <span className="rounded-md bg-white/[0.04] px-3 py-2">
+                      Evidence clip queued
+                    </span>
+                    <span className="rounded-md bg-white/[0.04] px-3 py-2">
+                      GPS attached
+                    </span>
+                    <span className="rounded-md bg-white/[0.04] px-3 py-2">
+                      Coaching action
+                    </span>
                   </div>
                 </div>
-              );
-            }
-          )}
+              ))}
+            </div>
+          </div>
 
-        </div>
-
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-bold">Driver Coaching Queue</h2>
+            <div className="mt-5 space-y-3">
+              {[...demoDrivers]
+                .sort(
+                  (a, b) =>
+                    Number(a.safety_score || 0) - Number(b.safety_score || 0)
+                )
+                .map((driver) => (
+                  <div
+                    key={driver.id}
+                    className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-white">{driver.name}</p>
+                        <p className="text-xs text-slate-500">
+                          {driver.status}
+                        </p>
+                      </div>
+                      <p className="text-xl font-black text-cyan-300">
+                        {driver.safety_score}
+                      </p>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-400">
+                      {Number(driver.safety_score) < 85
+                        ? "Schedule coaching before next dispatch."
+                        : "Continue monitoring and reward safe behavior."}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </section>
       </div>
-
     </AppLayout>
   );
 }

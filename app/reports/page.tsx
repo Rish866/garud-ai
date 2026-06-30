@@ -1,137 +1,194 @@
 import AppLayout from "../components/AppLayout";
+import {
+  complianceQueue,
+  demoDrivers,
+  demoTrips,
+  demoVehicles,
+  monthlyPerformance,
+  receivableAging,
+  reportCatalog,
+  transporterKPIs,
+} from "../lib/demoData";
+
+function money(value: number) {
+  return `INR ${value.toLocaleString("en-IN")}`;
+}
 
 export default function ReportsPage() {
+  const totalRevenue = monthlyPerformance.reduce(
+    (sum, month) => sum + month.revenue,
+    0
+  );
+  const totalExpense = monthlyPerformance.reduce(
+    (sum, month) => sum + month.expense,
+    0
+  );
+  const totalAlerts = monthlyPerformance.reduce(
+    (sum, month) => sum + month.alerts,
+    0
+  );
+  const bestDriver = [...demoDrivers].sort(
+    (a, b) => Number(b.safety_score || 0) - Number(a.safety_score || 0)
+  )[0];
+
   return (
     <AppLayout>
-      <h1 className="text-4xl font-bold text-blue-500 mb-8">
-        Reports & Analytics
-      </h1>
+      <div className="min-h-screen bg-[#05070d] text-white">
+        <section className="mb-6 rounded-lg border border-white/10 bg-slate-900/80 p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">
+            Reports command desk
+          </p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight">
+            Transporter Reports & Analytics
+          </h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+            Ready-to-send reports for owners, accounts, safety managers,
+            customers, compliance teams, and insurance claims.
+          </p>
+        </section>
 
-      {/* KPI Cards */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            ["Quarter revenue", money(totalRevenue), "Last 4 months"],
+            ["Quarter expenses", money(totalExpense), "Fuel, salary, repairs"],
+            ["Safety alerts", totalAlerts, "Down month-on-month"],
+            ["Best driver", bestDriver.name, `${bestDriver.safety_score}/100 score`],
+          ].map(([label, value, hint]) => (
+            <div
+              key={label}
+              className="rounded-lg border border-slate-800 bg-slate-900/80 p-5"
+            >
+              <p className="text-sm text-slate-400">{label}</p>
+              <h2 className="mt-3 text-3xl font-black text-white">{value}</h2>
+              <p className="mt-2 text-sm text-slate-500">{hint}</p>
+            </div>
+          ))}
+        </section>
 
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">Total Trips</p>
-          <h2 className="text-3xl font-bold">1,248</h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">Distance Covered</p>
-          <h2 className="text-3xl font-bold">98,500 km</h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">AI Alerts</p>
-          <h2 className="text-3xl font-bold text-red-500">327</h2>
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <p className="text-slate-400">Safety Score</p>
-          <h2 className="text-3xl font-bold text-green-500">89%</h2>
-        </div>
-
-      </div>
-
-      {/* Monthly Summary */}
-      <div className="bg-slate-900 rounded-xl p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-4">
-          Monthly Fleet Summary
-        </h2>
-
-        <div className="space-y-3">
-          <div className="flex justify-between border-b border-slate-800 pb-2">
-            <span>Total Vehicles</span>
-            <span>45</span>
+        <section className="mb-6 grid gap-4 xl:grid-cols-[1fr_0.8fr]">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-bold">Report Library</h2>
+            <div className="mt-5 grid gap-3 lg:grid-cols-2">
+              {reportCatalog.map((report) => (
+                <div
+                  key={report.title}
+                  className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-white">{report.title}</h3>
+                      <p className="mt-2 text-xs leading-5 text-slate-400">
+                        {report.output}
+                      </p>
+                    </div>
+                    <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-xs font-bold text-cyan-300">
+                      {report.cadence}
+                    </span>
+                  </div>
+                  <p className="mt-4 text-xs text-slate-500">
+                    Owner: {report.owner}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex justify-between border-b border-slate-800 pb-2">
-            <span>Active Drivers</span>
-            <span>52</span>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-bold">Monthly Trend</h2>
+            <div className="mt-5 space-y-4">
+              {monthlyPerformance.map((month) => {
+                const profit = month.revenue - month.expense;
+                const width = Math.round((profit / 700000) * 100);
+
+                return (
+                  <div key={month.label}>
+                    <div className="mb-2 flex justify-between text-sm">
+                      <span className="font-semibold text-white">
+                        {month.label}
+                      </span>
+                      <span className="text-cyan-300">{money(profit)}</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className="h-full rounded-full bg-emerald-400"
+                        style={{ width: `${Math.min(100, width)}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Revenue {money(month.revenue)} | Alerts {month.alerts}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-3">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-bold">Customer Billing Pack</h2>
+            <div className="mt-4 space-y-3">
+              {demoTrips.slice(0, 4).map((trip) => (
+                <div
+                  key={trip.id}
+                  className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                >
+                  <p className="font-semibold text-white">
+                    Trip #{trip.id}: {trip.origin} to {trip.destination}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-400">
+                    POD + GPS trail + detention + invoice + payment status
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex justify-between border-b border-slate-800 pb-2">
-            <span>Total Driving Hours</span>
-            <span>4,320 hrs</span>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-bold">Compliance Snapshot</h2>
+            <div className="mt-4 space-y-3">
+              {complianceQueue.map((item) => (
+                <div
+                  key={`${item.item}-${item.vehicle}`}
+                  className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                >
+                  <div>
+                    <p className="font-semibold text-white">{item.item}</p>
+                    <p className="text-xs text-slate-500">
+                      {item.vehicle} due in {item.due}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-amber-300">
+                    {item.risk}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex justify-between border-b border-slate-800 pb-2">
-            <span>Fuel Saved</span>
-            <span>₹1,45,000</span>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-bold">Finance Snapshot</h2>
+            <div className="mt-4 space-y-3">
+              {receivableAging.map((row) => (
+                <div
+                  key={row.bucket}
+                  className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/80 p-4"
+                >
+                  <div>
+                    <p className="font-semibold text-white">{row.bucket}</p>
+                    <p className="text-xs text-slate-500">{row.status}</p>
+                  </div>
+                  <span className="font-bold text-cyan-300">
+                    {money(row.amount)}
+                  </span>
+                </div>
+              ))}
+              <div className="rounded-lg bg-cyan-400/10 p-4 text-sm text-cyan-200">
+                Open invoices: {transporterKPIs.openInvoices}
+              </div>
+            </div>
           </div>
-
-          <div className="flex justify-between">
-            <span>Accidents Prevented</span>
-            <span>18</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Driver Rankings */}
-      <div className="bg-slate-900 rounded-xl p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-6">
-          Top Drivers
-        </h2>
-
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left py-3">Driver</th>
-              <th className="text-left py-3">Vehicle</th>
-              <th className="text-left py-3">Safety Score</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr className="border-b border-slate-800">
-              <td className="py-4">Rajesh Kumar</td>
-              <td>MH46AB1234</td>
-              <td className="text-green-500 font-bold">96</td>
-            </tr>
-
-            <tr className="border-b border-slate-800">
-              <td className="py-4">Amit Sharma</td>
-              <td>MH04XY5678</td>
-              <td className="text-yellow-400 font-bold">84</td>
-            </tr>
-
-            <tr>
-              <td className="py-4">Sunil Patil</td>
-              <td>MH12PQ7890</td>
-              <td className="text-orange-500 font-bold">78</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Alert Breakdown */}
-      <div className="bg-slate-900 rounded-xl p-6">
-        <h2 className="text-2xl font-bold mb-6">
-          Alert Breakdown
-        </h2>
-
-        <div className="grid md:grid-cols-4 gap-4">
-
-          <div className="bg-slate-800 p-4 rounded-lg text-center">
-            <h3 className="text-lg font-bold">📱 Mobile Usage</h3>
-            <p className="text-3xl mt-2">82</p>
-          </div>
-
-          <div className="bg-slate-800 p-4 rounded-lg text-center">
-            <h3 className="text-lg font-bold">😴 Fatigue</h3>
-            <p className="text-3xl mt-2">61</p>
-          </div>
-
-          <div className="bg-slate-800 p-4 rounded-lg text-center">
-            <h3 className="text-lg font-bold">🚬 Smoking</h3>
-            <p className="text-3xl mt-2">39</p>
-          </div>
-
-          <div className="bg-slate-800 p-4 rounded-lg text-center">
-            <h3 className="text-lg font-bold">⚠️ ADAS</h3>
-            <p className="text-3xl mt-2">145</p>
-          </div>
-
-        </div>
+        </section>
       </div>
     </AppLayout>
   );
