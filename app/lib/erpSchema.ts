@@ -6,6 +6,9 @@ export type ERPTableRequirement = {
 };
 
 export const erpTableRequirements: ERPTableRequirement[] = [
+  { table: "garud_tenants", label: "Customer workspaces", module: "Admin", critical: true },
+  { table: "garud_customer_users", label: "Customer logins", module: "Admin", critical: true },
+  { table: "garud_super_users", label: "GARUD super admins", module: "Admin", critical: true },
   { table: "vehicles", label: "Vehicle master", module: "Fleet", critical: true },
   { table: "drivers", label: "Driver master", module: "Fleet", critical: true },
   { table: "customers", label: "Customer master", module: "CRM", critical: true },

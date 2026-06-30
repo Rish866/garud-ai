@@ -13,6 +13,7 @@ const navSections = [
       { name: "Route Planner", href: "/route-planner", icon: "RT" },
       { name: "Reports", href: "/reports", icon: "RPT" },
       { name: "ERP Modules", href: "/erp-architecture", icon: "ERP" },
+      { name: "Onboard Customer", href: "/onboarding", icon: "NEW" },
       { name: "Readiness", href: "/system-readiness", icon: "RDY" },
     ],
   },
@@ -136,6 +137,12 @@ export default function AppLayout({
 
             <div className="hidden items-center gap-3 md:flex">
               <Link
+                href="/super-admin"
+                className="rounded-md border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-black text-cyan-800 hover:bg-cyan-100"
+              >
+                Super Admin
+              </Link>
+              <Link
                 href="/garud-agent"
                 className="rounded-md bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-300"
               >
@@ -153,9 +160,12 @@ export default function AppLayout({
                 System Online
               </div>
 
-              <div className="rounded-md border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300">
-                Admin
-              </div>
+              <a
+                href="/api/auth/logout"
+                className="rounded-md border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800"
+              >
+                Logout
+              </a>
             </div>
           </div>
         </header>
