@@ -32,4 +32,5 @@ export const erpTableRequirements: ERPTableRequirement[] = [
   { table: "erp_notifications", label: "Clickable notifications", module: "Automation", critical: true },
   { table: "erp_approvals", label: "Workflow approvals", module: "Automation", critical: true },
   { table: "erp_integrations", label: "Integration registry", module: "Admin", critical: false },
+  { table: "erp_device_mappings", label: "Vehicle device mappings", module: "Integrations", critical: true },
 ];

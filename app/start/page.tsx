@@ -38,7 +38,8 @@ const setupSteps = [
   { label: "3", title: "Create customers", href: "/customers", copy: "Add customer accounts before creating trips and invoices." },
   { label: "4", title: "Create first trip", href: "/trips", copy: "Assign customer, vehicle, driver, origin, destination and revenue." },
   { label: "5", title: "Upload documents", href: "/document-center", copy: "Store RC, permit, insurance, POD, invoice and fuel bills." },
-  { label: "6", title: "Invite users", href: "/settings", copy: "Give operations, finance, safety and viewer access." },
+  { label: "6", title: "Map GPS/devices", href: "/integrations", copy: "Add GPS vendor, API credentials, IMEI and device IDs." },
+  { label: "7", title: "Invite users", href: "/settings", copy: "Give operations, finance, safety and viewer access." },
 ];
 
 const departments = [
@@ -47,6 +48,7 @@ const departments = [
   ["Accounts", "Invoices, Payments, Receivables, Driver Salary"],
   ["Workshop", "Maintenance, Tyres, Documents"],
   ["Safety", "Live Dashcam, Safety Events, Video Requests"],
+  ["IT / Vendor", "Integrations, Device Mapping, API Health"],
 ];
 
 export const dynamic = "force-dynamic";
@@ -152,6 +154,7 @@ export default function StartPage() {
               {[
                 ["Type request", "Add diesel bill INR 12500 for MH04XY5678"],
                 ["Upload file", "Invoice, POD, permit, insurance, fuel bill"],
+                ["Connect GPS", "Map vehicle number to device ID, IMEI, SIM"],
                 ["Review issue", "Open Control Tower for SLA and escalations"],
                 ["Export report", "Use Reports or module PDF/CSV actions"],
               ].map(([title, copy]) => (

@@ -68,6 +68,7 @@ const navSections = [
     title: "Reports & Admin",
     items: [
       { name: "Reports", href: "/reports", icon: "RPT" },
+      { name: "Integrations", href: "/integrations", icon: "API" },
       { name: "Settings", href: "/settings", icon: "SET" },
       { name: "All ERP Modules", href: "/erp-architecture", icon: "ERP" },
     ],

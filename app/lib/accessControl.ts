@@ -66,6 +66,7 @@ const tableWriteRoles: Record<string, string[]> = {
   erp_notifications: ["owner", "admin"],
   erp_approvals: ["owner", "admin"],
   erp_integrations: ["owner", "admin"],
+  erp_device_mappings: ["owner", "admin", "operations"],
 };
 
 export function canWriteTable(table: string, role?: string, isSuperAdmin?: boolean) {
