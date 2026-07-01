@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const navSections = [
   {
@@ -14,7 +17,6 @@ const navSections = [
       { name: "Reports", href: "/reports", icon: "RPT" },
       { name: "ERP Modules", href: "/erp-architecture", icon: "ERP" },
       { name: "Settings", href: "/settings", icon: "SET" },
-      { name: "Onboard Customer", href: "/onboarding", icon: "NEW" },
       { name: "Readiness", href: "/system-readiness", icon: "RDY" },
     ],
   },
@@ -70,6 +72,33 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadSession() {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        const result = await response.json();
+
+        if (mounted) {
+          setIsSuperAdmin(Boolean(result.session?.isSuperAdmin));
+        }
+      } catch {
+        if (mounted) {
+          setIsSuperAdmin(false);
+        }
+      }
+    }
+
+    loadSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-[#05070d] text-white">
       <aside className="sticky top-0 hidden h-screen w-96 shrink-0 overflow-y-auto border-r border-white/10 bg-[#07111f]/95 xl:block">
@@ -101,28 +130,7 @@ export default function AppLayout({
         </div>
 
         <nav className="space-y-6 p-5">
-          {navSections.map((section) => (
-            <div key={section.title}>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
-                {section.title}
-              </p>
-
-              <div className="space-y-1">
-                {section.items.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm text-slate-300 transition hover:border-cyan-400/20 hover:bg-cyan-400/10 hover:text-white"
-                  >
-                    <span className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-950 text-[10px] font-black text-cyan-300">
-                      {item.icon}
-                    </span>
-                    <span>{item.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
+          <SidebarNav isSuperAdmin={isSuperAdmin} />
         </nav>
       </aside>
 
@@ -137,12 +145,7 @@ export default function AppLayout({
             </div>
 
             <div className="hidden items-center gap-3 md:flex">
-              <Link
-                href="/super-admin"
-                className="rounded-md border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-black text-cyan-800 hover:bg-cyan-100"
-              >
-                Super Admin
-              </Link>
+              <TopBarAdminActions isSuperAdmin={isSuperAdmin} />
               <Link
                 href="/garud-agent"
                 className="rounded-md bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-300"
@@ -174,5 +177,62 @@ export default function AppLayout({
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>
+  );
+}
+
+function SidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
+  const sections = isSuperAdmin
+    ? [
+        {
+          title: "Super Admin",
+          items: [
+            { name: "Super Admin", href: "/super-admin", icon: "SA" },
+            { name: "Onboard Customer", href: "/onboarding", icon: "NEW" },
+          ],
+        },
+        ...navSections,
+      ]
+    : navSections;
+
+  return (
+    <>
+      {sections.map((section) => (
+        <div key={section.title}>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
+            {section.title}
+          </p>
+
+          <div className="space-y-1">
+            {section.items.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm text-slate-300 transition hover:border-cyan-400/20 hover:bg-cyan-400/10 hover:text-white"
+              >
+                <span className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-950 text-[10px] font-black text-cyan-300">
+                  {item.icon}
+                </span>
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function TopBarAdminActions({ isSuperAdmin }: { isSuperAdmin: boolean }) {
+  if (!isSuperAdmin) {
+    return null;
+  }
+
+  return (
+    <Link
+      href="/super-admin"
+      className="rounded-md border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-black text-cyan-800 hover:bg-cyan-100"
+    >
+      Super Admin
+    </Link>
   );
 }
