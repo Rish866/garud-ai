@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
   return Response.json({
     ok: true,
-    redirectTo: "/dashboard",
+    redirectTo: "/start",
     tenantCode: tenant.tenant_code,
   });
 }

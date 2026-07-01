@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
 
 type Vehicle = {
   id: number;
@@ -72,45 +71,51 @@ export default function VehicleTable({ vehicles }: { vehicles: Vehicle[] }) {
     };
 
     if (editingId) {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .update(payload)
-        .eq("id", editingId)
-        .select()
-        .single();
+      const response = await fetch("/api/erp/records", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: "vehicles", id: editingId, values: payload }),
+      });
+      const result = await response.json();
 
-      if (error) {
-        alert(error.message);
+      if (!response.ok || !result.ok) {
+        alert(result.message || "Could not update vehicle");
         return;
       }
 
-      setRows(rows.map((row) => (row.id === editingId ? data : row)));
+      setRows(rows.map((row) => (row.id === editingId ? result.data : row)));
       resetForm();
       return;
     }
 
-    const { data, error } = await supabase
-      .from("vehicles")
-      .insert(payload)
-      .select()
-      .single();
+    const response = await fetch("/api/erp/records", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "vehicles", values: payload }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not add vehicle");
       return;
     }
 
-    setRows([data, ...rows]);
+    setRows([result.data, ...rows]);
     resetForm();
   }
 
   async function deleteVehicle(id: number) {
     if (!confirm("Delete this vehicle?")) return;
 
-    const { error } = await supabase.from("vehicles").delete().eq("id", id);
+    const response = await fetch("/api/erp/records", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "vehicles", id }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not delete vehicle");
       return;
     }
 

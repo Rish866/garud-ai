@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { supabase } from "../lib/supabase";
 
 type Customer = {
   id: number;
@@ -122,45 +121,51 @@ export default function TripTable({
     };
 
     if (editingId) {
-      const { data, error } = await supabase
-        .from("trips")
-        .update(payload)
-        .eq("id", editingId)
-        .select()
-        .single();
+      const response = await fetch("/api/erp/records", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: "trips", id: editingId, values: payload }),
+      });
+      const result = await response.json();
 
-      if (error) {
-        alert(error.message);
+      if (!response.ok || !result.ok) {
+        alert(result.message || "Could not update trip");
         return;
       }
 
-      setRows(rows.map((row) => (row.id === editingId ? data : row)));
+      setRows(rows.map((row) => (row.id === editingId ? result.data : row)));
       resetForm();
       return;
     }
 
-    const { data, error } = await supabase
-      .from("trips")
-      .insert(payload)
-      .select()
-      .single();
+    const response = await fetch("/api/erp/records", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "trips", values: payload }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not add trip");
       return;
     }
 
-    setRows([data, ...rows]);
+    setRows([result.data, ...rows]);
     resetForm();
   }
 
   async function deleteTrip(id: number) {
     if (!confirm("Delete this trip?")) return;
 
-    const { error } = await supabase.from("trips").delete().eq("id", id);
+    const response = await fetch("/api/erp/records", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "trips", id }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not delete trip");
       return;
     }
 

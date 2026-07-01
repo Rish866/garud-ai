@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { supabase } from "../lib/supabase";
 
 type Customer = {
   id: number;
@@ -91,45 +90,51 @@ export default function CustomerTable({
     };
 
     if (editingId) {
-      const { data, error } = await supabase
-        .from("customers")
-        .update(payload)
-        .eq("id", editingId)
-        .select()
-        .single();
+      const response = await fetch("/api/erp/records", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: "customers", id: editingId, values: payload }),
+      });
+      const result = await response.json();
 
-      if (error) {
-        alert(error.message);
+      if (!response.ok || !result.ok) {
+        alert(result.message || "Could not update customer");
         return;
       }
 
-      setRows(rows.map((row) => (row.id === editingId ? data : row)));
+      setRows(rows.map((row) => (row.id === editingId ? result.data : row)));
       resetForm();
       return;
     }
 
-    const { data, error } = await supabase
-      .from("customers")
-      .insert(payload)
-      .select()
-      .single();
+    const response = await fetch("/api/erp/records", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "customers", values: payload }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not add customer");
       return;
     }
 
-    setRows([...rows, data]);
+    setRows([result.data, ...rows]);
     resetForm();
   }
 
   async function deleteCustomer(id: number) {
     if (!confirm("Delete this customer?")) return;
 
-    const { error } = await supabase.from("customers").delete().eq("id", id);
+    const response = await fetch("/api/erp/records", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "customers", id }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not delete customer");
       return;
     }
 

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
 
 type Vehicle = {
   id: number;
@@ -77,45 +76,51 @@ export default function DriverTable({
     };
 
     if (editingId) {
-      const { data, error } = await supabase
-        .from("drivers")
-        .update(payload)
-        .eq("id", editingId)
-        .select()
-        .single();
+      const response = await fetch("/api/erp/records", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: "drivers", id: editingId, values: payload }),
+      });
+      const result = await response.json();
 
-      if (error) {
-        alert(error.message);
+      if (!response.ok || !result.ok) {
+        alert(result.message || "Could not update driver");
         return;
       }
 
-      setRows(rows.map((row) => (row.id === editingId ? data : row)));
+      setRows(rows.map((row) => (row.id === editingId ? result.data : row)));
       resetForm();
       return;
     }
 
-    const { data, error } = await supabase
-      .from("drivers")
-      .insert(payload)
-      .select()
-      .single();
+    const response = await fetch("/api/erp/records", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "drivers", values: payload }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not add driver");
       return;
     }
 
-    setRows([data, ...rows]);
+    setRows([result.data, ...rows]);
     resetForm();
   }
 
   async function deleteDriver(id: number) {
     if (!confirm("Delete this driver?")) return;
 
-    const { error } = await supabase.from("drivers").delete().eq("id", id);
+    const response = await fetch("/api/erp/records", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "drivers", id }),
+    });
+    const result = await response.json();
 
-    if (error) {
-      alert(error.message);
+    if (!response.ok || !result.ok) {
+      alert(result.message || "Could not delete driver");
       return;
     }
 

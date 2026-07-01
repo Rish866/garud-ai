@@ -2,57 +2,56 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const navSections = [
   {
-    title: "Command",
+    title: "Start Here",
     items: [
+      { name: "ERP Home", href: "/start", icon: "GO" },
       { name: "Dashboard", href: "/dashboard", icon: "DB" },
-      { name: "GARUD Agent", href: "/garud-agent", icon: "AI" },
-      { name: "TMS Lifecycle", href: "/tms", icon: "TMS" },
-      { name: "Command Center", href: "/command-center", icon: "CC" },
       { name: "Control Tower", href: "/control-tower", icon: "ISS" },
-      { name: "Route Planner", href: "/route-planner", icon: "RT" },
-      { name: "Reports", href: "/reports", icon: "RPT" },
-      { name: "ERP Modules", href: "/erp-architecture", icon: "ERP" },
-      { name: "Settings", href: "/settings", icon: "SET" },
-      { name: "Readiness", href: "/system-readiness", icon: "RDY" },
+      { name: "GARUD Agent", href: "/garud-agent", icon: "AI" },
     ],
   },
   {
-    title: "Fleet ERP",
+    title: "Master Data",
     items: [
       { name: "Vehicles", href: "/vehicles", icon: "TRK" },
       { name: "Drivers", href: "/drivers", icon: "DRV" },
       { name: "Customers", href: "/customers", icon: "CUS" },
-      { name: "Customer Portal", href: "/customer-portal", icon: "PORT" },
+      { name: "Documents", href: "/document-center", icon: "DOC" },
+    ],
+  },
+  {
+    title: "Trip Operations",
+    items: [
       { name: "Trips", href: "/trips", icon: "TRP" },
+      { name: "Route Planner", href: "/route-planner", icon: "RT" },
+      { name: "TMS Lifecycle", href: "/tms", icon: "TMS" },
+      { name: "Customer Portal", href: "/customer-portal", icon: "PORT" },
       { name: "Trip Expenses", href: "/trip-expenses", icon: "EXP" },
-      { name: "Driver App", href: "/driver-app", icon: "APP" },
     ],
   },
   {
-    title: "Compliance",
+    title: "Money",
     items: [
-      { name: "Maintenance Center", href: "/maintenance-center", icon: "MNT" },
-      { name: "Tyre Management", href: "/tyre-management", icon: "TYR" },
-      { name: "Maintenance Alerts", href: "/maintenance-alerts", icon: "ALT" },
-      { name: "Document Center", href: "/document-center", icon: "DOC" },
-      { name: "Document Alerts", href: "/document-alerts", icon: "DUE" },
-    ],
-  },
-  {
-    title: "Finance",
-    items: [
-      { name: "Fuel Management", href: "/fuel-management", icon: "FUEL" },
-      { name: "Driver Salary", href: "/driver-salary", icon: "PAY" },
       { name: "Invoices", href: "/invoices", icon: "INV" },
-      { name: "Billing Packs", href: "/billing-packs", icon: "POD" },
       { name: "Payments", href: "/payments", icon: "PMT" },
       { name: "Receivables", href: "/receivables", icon: "REC" },
-      { name: "Vehicle Profitability", href: "/profitability", icon: "ROI" },
-      { name: "Billing", href: "/billing", icon: "BIL" },
+      { name: "Fuel", href: "/fuel-management", icon: "FUEL" },
+      { name: "Driver Salary", href: "/driver-salary", icon: "PAY" },
+      { name: "Billing Packs", href: "/billing-packs", icon: "POD" },
+    ],
+  },
+  {
+    title: "Workshop & Compliance",
+    items: [
+      { name: "Maintenance", href: "/maintenance-center", icon: "MNT" },
+      { name: "Tyres", href: "/tyre-management", icon: "TYR" },
+      { name: "Document Alerts", href: "/document-alerts", icon: "DUE" },
+      { name: "Profitability", href: "/profitability", icon: "ROI" },
     ],
   },
   {
@@ -65,6 +64,23 @@ const navSections = [
       { name: "AI Risk Engine", href: "/risk-engine", icon: "RISK" },
     ],
   },
+  {
+    title: "Reports & Admin",
+    items: [
+      { name: "Reports", href: "/reports", icon: "RPT" },
+      { name: "Settings", href: "/settings", icon: "SET" },
+      { name: "All ERP Modules", href: "/erp-architecture", icon: "ERP" },
+    ],
+  },
+];
+
+const quickActions = [
+  { name: "Add vehicle", href: "/vehicles", icon: "TRK" },
+  { name: "Add driver", href: "/drivers", icon: "DRV" },
+  { name: "Add customer", href: "/customers", icon: "CUS" },
+  { name: "Create trip", href: "/trips", icon: "TRP" },
+  { name: "Raise invoice", href: "/invoices", icon: "INV" },
+  { name: "Upload docs", href: "/document-center", icon: "DOC" },
 ];
 
 export default function AppLayout({
@@ -138,9 +154,9 @@ export default function AppLayout({
         <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070d]/90 px-6 py-4 backdrop-blur">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black">Fleet Operations Center</h2>
+              <h2 className="text-xl font-black">GARUD AI Transport ERP</h2>
               <p className="text-sm text-slate-400">
-                Dispatch, finance, compliance, GPS, and AI safety in one workflow
+                Start, dispatch, finance, compliance, GPS, and AI safety
               </p>
             </div>
 
@@ -181,6 +197,7 @@ export default function AppLayout({
 }
 
 function SidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
+  const pathname = usePathname();
   const sections = isSuperAdmin
     ? [
         {
@@ -196,6 +213,24 @@ function SidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
 
   return (
     <>
+      <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/10 p-3">
+        <p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
+          Quick Add
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {quickActions.map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="rounded-lg border border-cyan-300/10 bg-slate-950/60 px-3 py-2 text-xs font-bold text-slate-200 hover:border-cyan-300/30 hover:bg-cyan-400/10"
+            >
+              <span className="mr-2 text-cyan-300">{action.icon}</span>
+              {action.name}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {sections.map((section) => (
         <div key={section.title}>
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
@@ -207,7 +242,11 @@ function SidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm text-slate-300 transition hover:border-cyan-400/20 hover:bg-cyan-400/10 hover:text-white"
+                className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${
+                  pathname === item.href
+                    ? "border-cyan-400/30 bg-cyan-400/15 text-white"
+                    : "border-transparent text-slate-300 hover:border-cyan-400/20 hover:bg-cyan-400/10 hover:text-white"
+                }`}
               >
                 <span className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-950 text-[10px] font-black text-cyan-300">
                   {item.icon}
