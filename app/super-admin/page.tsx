@@ -3,6 +3,8 @@ import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
 import { getCurrentTenant } from "../lib/tenant";
 import SuperAdminClient from "./SuperAdminClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const session = await getCurrentTenant();
 

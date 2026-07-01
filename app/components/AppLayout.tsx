@@ -13,6 +13,7 @@ const navSections = [
       { name: "Route Planner", href: "/route-planner", icon: "RT" },
       { name: "Reports", href: "/reports", icon: "RPT" },
       { name: "ERP Modules", href: "/erp-architecture", icon: "ERP" },
+      { name: "Settings", href: "/settings", icon: "SET" },
       { name: "Onboard Customer", href: "/onboarding", icon: "NEW" },
       { name: "Readiness", href: "/system-readiness", icon: "RDY" },
     ],

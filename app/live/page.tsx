@@ -4,6 +4,8 @@ import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
 import LiveClient from "./LiveClient";
 import type { Vehicle } from "../../types/vehicle";
 
+export const dynamic = "force-dynamic";
+
 export default async function LivePage() {
   const supabase = createSupabaseAdminClient();
   const tenantId = await getTenantIdForData();
