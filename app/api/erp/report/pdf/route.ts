@@ -1,5 +1,3 @@
-import { createSupabaseAdminClient } from "../../../../lib/supabaseAdmin";
-
 export const dynamic = "force-dynamic";
 
 type ReportBody = {
@@ -84,7 +82,7 @@ function buildPdf(body: ReportBody) {
   pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`;
   pdf += `startxref\n${xrefOffset}\n%%EOF`;
 
-  return { bytes: new TextEncoder().encode(pdf), title };
+  return { pdf, title };
 }
 
 export async function GET() {
@@ -92,26 +90,24 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as ReportBody;
-  const { bytes, title } = buildPdf(body);
-
   try {
-    const supabase = createSupabaseAdminClient();
-    await supabase.from("erp_report_exports").insert({
-      report_name: title,
-      module_key: body.moduleKey || null,
-      format: "pdf",
-      requested_by: "admin",
-      status: "generated",
+    const body = (await request.json()) as ReportBody;
+    const { pdf, title } = buildPdf(body);
+
+    return new Response(pdf, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${cleanFileName(title)}.pdf"`,
+      },
     });
   } catch {
-    // Export must still work even if audit logging is temporarily unavailable.
-  }
+    const { pdf } = buildPdf({ title: "GARUD AI ERP Report" });
 
-  return new Response(bytes, {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${cleanFileName(title)}.pdf"`,
-    },
-  });
+    return new Response(pdf, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": 'attachment; filename="garud-ai-erp-report.pdf"',
+      },
+    });
+  }
 }
