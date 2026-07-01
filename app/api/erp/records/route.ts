@@ -40,10 +40,17 @@ export async function GET(request: Request) {
   const table = getTable(url.searchParams.get("table"));
   const supabase = createSupabaseAdminClient();
   const tenantId = await getTenantIdForData();
-  const { data, error } = await filterByTenant(
+  let { data, error } = await filterByTenant(
     supabase.from(table).select("*").order("created_at", { ascending: false }),
     tenantId,
   );
+
+  if (error?.message.includes("created_at does not exist")) {
+    ({ data, error } = await filterByTenant(
+      supabase.from(table).select("*"),
+      tenantId,
+    ));
+  }
 
   if (error) {
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
