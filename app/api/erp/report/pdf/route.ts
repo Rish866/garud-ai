@@ -1,9 +1,6 @@
-import { NextResponse } from "next/server";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { createSupabaseAdminClient } from "../../../../lib/supabaseAdmin";
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
 type ReportBody = {
   title?: string;
@@ -13,111 +10,90 @@ type ReportBody = {
   reports?: string[];
 };
 
-export async function GET() {
-  return Response.json({ ok: true, route: "erp-report-pdf", version: 2 });
+function pdfText(value: unknown) {
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)")
+    .slice(0, 92);
 }
 
-function text(value: unknown) {
-  return String(value ?? "").slice(0, 72);
+function cleanFileName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function buildPdf(body: ReportBody) {
+  const title = body.title || "GARUD AI ERP Report";
+  const columns = body.columns || [];
+  const rows = body.rows || [];
+  const reports = body.reports || [];
+  const lines = [
+    "GARUD AI",
+    title,
+    `Generated: ${new Date().toLocaleString("en-IN")}`,
+    `Records: ${rows.length}`,
+    "",
+    columns.length ? columns.slice(0, 5).join(" | ") : "Records",
+    ...rows.slice(0, 24).map((row) => row.slice(0, 5).join(" | ")),
+    "",
+    ...reports.slice(0, 8).map((report) => `Report: ${report}`),
+  ].filter((line, index) => line || index < 5);
+
+  const content = [
+    "BT",
+    "/F1 18 Tf",
+    "42 552 Td",
+    `(GARUD AI) Tj`,
+    "/F1 12 Tf",
+    "0 -24 Td",
+    `(${pdfText(title)}) Tj`,
+    "/F2 9 Tf",
+    "0 -18 Td",
+    ...lines.slice(2).flatMap((line) => [
+      `(${pdfText(line)}) Tj`,
+      "0 -14 Td",
+    ]),
+    "ET",
+  ].join("\n");
+
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+  ];
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n`;
+  pdf += "0000000000 65535 f \n";
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`;
+  pdf += `startxref\n${xrefOffset}\n%%EOF`;
+
+  return { bytes: new TextEncoder().encode(pdf), title };
+}
+
+export async function GET() {
+  return Response.json({ ok: true, route: "erp-report-pdf", version: 3 });
 }
 
 export async function POST(request: Request) {
   const body = (await request.json()) as ReportBody;
-  const title = body.title || "GARUD AI ERP Report";
-  const columns = body.columns || [];
-  const rows = body.rows || [];
-
-  const pdf = await PDFDocument.create();
-  const page = pdf.addPage([842, 595]);
-  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const regular = await pdf.embedFont(StandardFonts.Helvetica);
-  const { height } = page.getSize();
-
-  page.drawRectangle({
-    x: 0,
-    y: height - 86,
-    width: 842,
-    height: 86,
-    color: rgb(0.02, 0.04, 0.08),
-  });
-  page.drawText("GARUD AI", {
-    x: 36,
-    y: height - 42,
-    size: 18,
-    font: bold,
-    color: rgb(0.35, 0.9, 1),
-  });
-  page.drawText(title, {
-    x: 36,
-    y: height - 68,
-    size: 13,
-    font: regular,
-    color: rgb(0.9, 0.95, 1),
-  });
-  page.drawText(new Date().toLocaleString("en-IN"), {
-    x: 650,
-    y: height - 42,
-    size: 10,
-    font: regular,
-    color: rgb(0.72, 0.78, 0.86),
-  });
-
-  let y = height - 122;
-  page.drawText("Records", { x: 36, y, size: 12, font: bold, color: rgb(0.1, 0.15, 0.22) });
-  y -= 24;
-
-  const widths = [125, 145, 135, 120, 120, 110];
-  columns.slice(0, 6).forEach((column, index) => {
-    page.drawText(text(column), {
-      x: 36 + widths.slice(0, index).reduce((sum, item) => sum + item, 0),
-      y,
-      size: 9,
-      font: bold,
-      color: rgb(0.1, 0.15, 0.22),
-    });
-  });
-  y -= 16;
-
-  rows.slice(0, 18).forEach((row) => {
-    page.drawLine({
-      start: { x: 36, y: y + 10 },
-      end: { x: 806, y: y + 10 },
-      thickness: 0.5,
-      color: rgb(0.86, 0.9, 0.95),
-    });
-    row.slice(0, 6).forEach((cell, index) => {
-      page.drawText(text(cell), {
-        x: 36 + widths.slice(0, index).reduce((sum, item) => sum + item, 0),
-        y,
-        size: 8,
-        font: regular,
-        color: rgb(0.18, 0.23, 0.3),
-      });
-    });
-    y -= 20;
-  });
-
-  if (body.reports?.length) {
-    y -= 16;
-    page.drawText("Available Reports", {
-      x: 36,
-      y,
-      size: 12,
-      font: bold,
-      color: rgb(0.1, 0.15, 0.22),
-    });
-    y -= 18;
-    body.reports.slice(0, 8).forEach((report) => {
-      page.drawText(`- ${text(report)}`, {
-        x: 36,
-        y,
-        size: 9,
-        font: regular,
-        color: rgb(0.18, 0.23, 0.3),
-      });
-      y -= 14;
-    });
-  }
+  const { bytes, title } = buildPdf(body);
 
   try {
     const supabase = createSupabaseAdminClient();
@@ -129,18 +105,13 @@ export async function POST(request: Request) {
       status: "generated",
     });
   } catch {
-    // The PDF should still download even if audit logging is unavailable.
+    // Export must still work even if audit logging is temporarily unavailable.
   }
 
-  const bytes = await pdf.save();
-
-  return new NextResponse(new Uint8Array(bytes), {
+  return new Response(bytes, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")}.pdf"`,
+      "Content-Disposition": `attachment; filename="${cleanFileName(title)}.pdf"`,
     },
   });
 }
