@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { canWriteTable } from "../../../lib/accessControl";
 import { createSupabaseAdminClient } from "../../../lib/supabaseAdmin";
 import { withTenantId } from "../../../lib/tenantData";
+import { getCurrentTenant } from "../../../lib/tenant";
 
 type ActionBody = {
   moduleKey?: string;
@@ -12,6 +14,21 @@ type ActionBody = {
 
 export async function POST(request: Request) {
   const body = (await request.json()) as ActionBody;
+  const session = await getCurrentTenant();
+
+  if (!session?.tenantId && !session?.isSuperAdmin) {
+    return NextResponse.json(
+      { ok: false, message: "Login session is required" },
+      { status: 401 },
+    );
+  }
+
+  if (!canWriteTable("erp_action_log", session.role, session.isSuperAdmin)) {
+    return NextResponse.json(
+      { ok: false, message: "Your role cannot create workflow actions." },
+      { status: 403 },
+    );
+  }
 
   if (!body.moduleTitle || !body.actionType) {
     return NextResponse.json(

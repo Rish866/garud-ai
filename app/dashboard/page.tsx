@@ -246,7 +246,7 @@ export default async function DashboardPage() {
                 </p>
               </div>
               <Link
-                href="/trips/add"
+                href="/trips"
                 className="rounded-md bg-cyan-400 px-3 py-2 text-sm font-bold text-slate-950"
               >
                 Create trip

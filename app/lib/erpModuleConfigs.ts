@@ -8,7 +8,7 @@ export const erpModules: Record<string, ERPModuleConfig> = {
     title: "Vehicle Master & Asset Control",
     description:
       "Complete vehicle registry with live status, ownership, documents, GPS, cameras, maintenance, tyre health, and profitability signals.",
-    primaryAction: { label: "Add vehicle", href: "/add-vehicle" },
+    primaryAction: { label: "Add vehicle", href: "/vehicles" },
     secondaryActions: [
       { label: "View risk", href: "/vehicle-risk" },
       { label: "Profitability", href: "/profitability" },
@@ -46,7 +46,7 @@ export const erpModules: Record<string, ERPModuleConfig> = {
     title: "Driver Master, Duty & Coaching",
     description:
       "Manage driver KYC, license, salary, trip duty, advances, safety score, coaching actions, and attendance readiness.",
-    primaryAction: { label: "Add driver", href: "/drivers/add" },
+    primaryAction: { label: "Add driver", href: "/drivers" },
     secondaryActions: [
       { label: "Safety score", href: "/driver-score" },
       { label: "Salary", href: "/driver-salary" },
@@ -84,10 +84,10 @@ export const erpModules: Record<string, ERPModuleConfig> = {
     title: "Customer, Contract & Credit Control",
     description:
       "Manage customers, lanes, contract rates, billing terms, POD requirements, credit exposure, and dispatch hold decisions.",
-    primaryAction: { label: "New customer", href: "/customers/add" },
+    primaryAction: { label: "New customer", href: "/customers" },
     secondaryActions: [
       { label: "Receivables", href: "/receivables" },
-      { label: "Create invoice", href: "/invoices/add" },
+      { label: "Create invoice", href: "/invoices" },
     ],
     metrics: [
       { label: "Customers", value: 24, hint: "Active accounts" },
@@ -122,10 +122,10 @@ export const erpModules: Record<string, ERPModuleConfig> = {
     title: "Trip Planning, Dispatch & POD",
     description:
       "Create trips, assign vehicle and driver, track route progress, capture expenses, attach POD, and close billing in one workflow.",
-    primaryAction: { label: "Create trip", href: "/trips/add" },
+    primaryAction: { label: "Create trip", href: "/trips" },
     secondaryActions: [
       { label: "Trip expenses", href: "/trip-expenses" },
-      { label: "Create invoice", href: "/invoices/add" },
+      { label: "Create invoice", href: "/invoices" },
     ],
     metrics: [
       { label: "Trips today", value: 18, hint: "Running and planned" },
@@ -160,7 +160,7 @@ export const erpModules: Record<string, ERPModuleConfig> = {
     title: "Trip Expense Capture & Approval",
     description:
       "Capture diesel, toll, loading, unloading, challan, driver advance, detention, and miscellaneous expenses before trip billing.",
-    primaryAction: { label: "Add trip expense", href: "/trip-expenses/add" },
+    primaryAction: { label: "Add trip expense", href: "/trip-expenses" },
     secondaryActions: [
       { label: "Trips", href: "/trips" },
       { label: "Profitability", href: "/profitability" },
@@ -201,7 +201,7 @@ export const complianceModules: Record<string, ERPModuleConfig> = {
     title: "Maintenance Command Center",
     description:
       "Plan preventive maintenance, breakdown repair, job cards, vendor bills, spare parts, downtime, and vehicle release approvals.",
-    primaryAction: { label: "Add maintenance", href: "/maintenance/add" },
+    primaryAction: { label: "Add maintenance", href: "/maintenance-center" },
     secondaryActions: [
       { label: "Alerts", href: "/maintenance-alerts" },
       { label: "Vehicle risk", href: "/vehicle-risk" },
@@ -317,7 +317,7 @@ export const complianceModules: Record<string, ERPModuleConfig> = {
       "Track service alerts, breakdown risk, inspection failures, job-card escalation, and automatic dispatch holds.",
     primaryAction: { label: "Open maintenance center", href: "/maintenance-center" },
     secondaryActions: [
-      { label: "Add maintenance", href: "/maintenance/add" },
+      { label: "Add maintenance", href: "/maintenance-center" },
       { label: "Vehicle risk", href: "/vehicle-risk" },
     ],
     metrics: [
@@ -394,7 +394,7 @@ export const financeModules: Record<string, ERPModuleConfig> = {
     title: "Fuel Control & Mileage Analytics",
     description:
       "Track fuel entries, card/cash spend, route mileage, theft variance, driver-wise consumption, and vehicle fuel efficiency.",
-    primaryAction: { label: "Add fuel", href: "/fuel/add" },
+    primaryAction: { label: "Add fuel", href: "/fuel-management" },
     secondaryActions: [
       { label: "Trip expenses", href: "/trip-expenses" },
       { label: "Profitability", href: "/profitability" },
@@ -432,7 +432,7 @@ export const financeModules: Record<string, ERPModuleConfig> = {
     title: "Driver Salary, Advance & Settlement",
     description:
       "Calculate salary, trip bata, incentives, penalties, advances, deductions, and month-end settlement per driver.",
-    primaryAction: { label: "Add salary", href: "/driver-salary/add" },
+    primaryAction: { label: "Add salary", href: "/driver-salary" },
     secondaryActions: [
       { label: "Drivers", href: "/drivers" },
       { label: "Driver score", href: "/driver-score" },
@@ -470,7 +470,7 @@ export const financeModules: Record<string, ERPModuleConfig> = {
     title: "Invoice, POD & Billing Workflow",
     description:
       "Generate invoices from trips, attach POD and GPS proof, add detention charges, track approvals, and send billing packs.",
-    primaryAction: { label: "Create invoice", href: "/invoices/add" },
+    primaryAction: { label: "Create invoice", href: "/invoices" },
     secondaryActions: [
       { label: "Receivables", href: "/receivables" },
       { label: "Payments", href: "/payments" },
@@ -508,7 +508,7 @@ export const financeModules: Record<string, ERPModuleConfig> = {
     title: "Payments, Receipts & Reconciliation",
     description:
       "Record customer receipts, vendor payments, driver advances, bank reconciliation, invoice settlement, and cash-flow control.",
-    primaryAction: { label: "Add payment", href: "/payments/add" },
+    primaryAction: { label: "Add payment", href: "/payments" },
     secondaryActions: [
       { label: "Receivables", href: "/receivables" },
       { label: "Invoices", href: "/invoices" },
@@ -546,7 +546,7 @@ export const financeModules: Record<string, ERPModuleConfig> = {
     title: "Billing, Contracts & Charges",
     description:
       "Configure lane rates, detention, loading/unloading charges, GST, billing rules, customer terms, and approval workflows.",
-    primaryAction: { label: "Create invoice", href: "/invoices/add" },
+    primaryAction: { label: "Create invoice", href: "/invoices" },
     secondaryActions: [
       { label: "Customers", href: "/customers" },
       { label: "Receivables", href: "/receivables" },

@@ -1,15 +1,5 @@
-import AddCustomerForm from "../../components/AddCustomerForm";
+import { redirect } from "next/navigation";
 
-export default function AddCustomerPage() {
-  return (
-    <main className="min-h-screen bg-slate-950 text-white p-6">
-      <h1 className="text-4xl font-bold text-blue-500 mb-8">
-        Add Customer
-      </h1>
-
-      <div className="bg-slate-900 p-6 rounded-xl">
-        <AddCustomerForm />
-      </div>
-    </main>
-  );
+export default function Page() {
+  redirect("/customers");
 }

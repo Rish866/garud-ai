@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { canWriteTable } from "../../../lib/accessControl";
 import { erpTableRequirements } from "../../../lib/erpSchema";
 import { createSupabaseAdminClient } from "../../../lib/supabaseAdmin";
 import { filterByTenant, getTenantIdForData, withTenantId } from "../../../lib/tenantData";
+import { getCurrentTenant } from "../../../lib/tenant";
 
 const allowedTables = new Set(erpTableRequirements.map((item) => item.table));
 
@@ -11,6 +13,26 @@ function getTable(value: unknown) {
   }
 
   return value;
+}
+
+async function requireWriteAccess(table: string) {
+  const session = await getCurrentTenant();
+
+  if (!session?.tenantId && !session?.isSuperAdmin) {
+    return NextResponse.json(
+      { ok: false, message: "Login session is required." },
+      { status: 401 },
+    );
+  }
+
+  if (!canWriteTable(table, session.role, session.isSuperAdmin)) {
+    return NextResponse.json(
+      { ok: false, message: "Your role does not have permission for this action." },
+      { status: 403 },
+    );
+  }
+
+  return null;
 }
 
 export async function GET(request: Request) {
@@ -33,6 +55,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const body = await request.json();
   const table = getTable(body.table);
+  const denied = await requireWriteAccess(table);
+  if (denied) return denied;
   const values = body.values;
 
   if (!values || typeof values !== "object") {
@@ -60,6 +84,8 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   const body = await request.json();
   const table = getTable(body.table);
+  const denied = await requireWriteAccess(table);
+  if (denied) return denied;
 
   if (!body.id || !body.values || typeof body.values !== "object") {
     return NextResponse.json(
@@ -88,6 +114,8 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   const body = await request.json();
   const table = getTable(body.table);
+  const denied = await requireWriteAccess(table);
+  if (denied) return denied;
 
   if (!body.id) {
     return NextResponse.json(

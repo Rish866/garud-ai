@@ -4,13 +4,13 @@ const actions = [
   {
     title: "Add Vehicle",
     code: "TRK",
-    href: "/add-vehicle",
+    href: "/vehicles",
     color: "bg-blue-600/20 text-blue-200",
   },
   {
     title: "Add Driver",
     code: "DRV",
-    href: "/drivers/add",
+    href: "/drivers",
     color: "bg-green-600/20 text-green-200",
   },
   {
@@ -22,7 +22,7 @@ const actions = [
   {
     title: "Create Trip",
     code: "LOAD",
-    href: "/trips/add",
+    href: "/trips",
     color: "bg-cyan-600/20 text-cyan-200",
   },
   {
@@ -40,13 +40,13 @@ const actions = [
   {
     title: "New Customer",
     code: "CUS",
-    href: "/customers/add",
+    href: "/customers",
     color: "bg-indigo-600/20 text-indigo-200",
   },
   {
     title: "Fuel Entry",
     code: "FUEL",
-    href: "/fuel/add",
+    href: "/fuel-management",
     color: "bg-amber-600/20 text-amber-200",
   },
   {
@@ -70,19 +70,19 @@ const actions = [
   {
     title: "Maintenance",
     code: "MNT",
-    href: "/maintenance/add",
+    href: "/maintenance-center",
     color: "bg-rose-600/20 text-rose-200",
   },
   {
     title: "Create Invoice",
     code: "INV",
-    href: "/invoices/add",
+    href: "/invoices",
     color: "bg-violet-600/20 text-violet-200",
   },
   {
     title: "Driver Salary",
     code: "PAY",
-    href: "/driver-salary/add",
+    href: "/driver-salary",
     color: "bg-emerald-600/20 text-emerald-200",
   },
 ];

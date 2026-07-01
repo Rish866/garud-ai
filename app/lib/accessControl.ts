@@ -42,3 +42,33 @@ export const manageableRoles = roleDefinitions.map((role) => role.key);
 export function canManageSettings(role?: string, isSuperAdmin?: boolean) {
   return Boolean(isSuperAdmin || role === "owner" || role === "admin");
 }
+
+const tableWriteRoles: Record<string, string[]> = {
+  vehicles: ["owner", "admin", "operations"],
+  drivers: ["owner", "admin", "operations"],
+  customers: ["owner", "admin", "operations", "finance"],
+  trips: ["owner", "admin", "operations"],
+  erp_route_plans: ["owner", "admin", "operations"],
+  erp_trip_expenses: ["owner", "admin", "operations", "finance"],
+  invoices: ["owner", "admin", "finance"],
+  payments: ["owner", "admin", "finance"],
+  fuel_logs: ["owner", "admin", "operations", "finance"],
+  erp_driver_settlements: ["owner", "admin", "finance"],
+  erp_billing_packs: ["owner", "admin", "finance", "operations"],
+  erp_documents: ["owner", "admin", "operations", "finance", "safety"],
+  erp_maintenance_jobs: ["owner", "admin", "operations"],
+  erp_tyre_records: ["owner", "admin", "operations"],
+  erp_safety_events: ["owner", "admin", "safety"],
+  erp_video_requests: ["owner", "admin", "safety"],
+  erp_issues: ["owner", "admin", "operations", "finance", "safety"],
+  erp_action_log: ["owner", "admin", "operations", "finance", "safety"],
+  erp_module_records: ["owner", "admin", "operations", "finance", "safety"],
+  erp_notifications: ["owner", "admin"],
+  erp_approvals: ["owner", "admin"],
+  erp_integrations: ["owner", "admin"],
+};
+
+export function canWriteTable(table: string, role?: string, isSuperAdmin?: boolean) {
+  if (isSuperAdmin || role === "owner" || role === "admin") return true;
+  return tableWriteRoles[table]?.includes(role || "") || false;
+}
