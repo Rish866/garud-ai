@@ -13,6 +13,10 @@ type ReportBody = {
   reports?: string[];
 };
 
+export async function GET() {
+  return Response.json({ ok: true, route: "erp-report-pdf", version: 2 });
+}
+
 function text(value: unknown) {
   return String(value ?? "").slice(0, 72);
 }
