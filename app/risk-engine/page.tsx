@@ -1,10 +1,26 @@
 import AppLayout from "../components/AppLayout";
-import {
-  commandEvents,
-  demoDrivers,
-  demoVehicles,
-  maintenanceQueue,
-} from "../lib/demoData";
+import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
+import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
+
+export const dynamic = "force-dynamic";
+
+type DriverRecord = {
+  id: string | number;
+  name?: string | null;
+  phone?: string | null;
+  status?: string | null;
+  safety_score?: number | string | null;
+};
+
+type VehicleRecord = {
+  id: string | number;
+  vehicle_number?: string | null;
+  status?: string | null;
+  health?: number | string | null;
+  alerts?: number | string | null;
+  location?: string | null;
+  route?: string | null;
+};
 
 function riskTone(score: number) {
   if (score < 80) return "border-rose-400/30 bg-rose-400/10 text-rose-200";
@@ -12,19 +28,66 @@ function riskTone(score: number) {
   return "border-emerald-400/30 bg-emerald-400/10 text-emerald-200";
 }
 
-export default function RiskEnginePage() {
-  const fleetScore = Math.round(
-    demoDrivers.reduce(
-      (sum, driver) => sum + Number(driver.safety_score || 0),
-      0
-    ) / demoDrivers.length
+function numberValue(value: unknown, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+export default async function RiskEnginePage() {
+  const supabase = createSupabaseAdminClient();
+  const tenantId = await getTenantIdForData();
+  const [
+    { data: drivers },
+    { data: vehicles },
+    { data: maintenanceJobs },
+    { data: safetyEvents },
+  ] = await Promise.all([
+    filterByTenant(supabase.from("drivers").select("*").order("id"), tenantId),
+    filterByTenant(supabase.from("vehicles").select("*").order("id"), tenantId),
+    filterByTenant(supabase.from("erp_maintenance_jobs").select("*"), tenantId),
+    filterByTenant(supabase.from("erp_safety_events").select("*"), tenantId),
+  ]);
+
+  const safeDrivers = (drivers || []) as DriverRecord[];
+  const safeVehicles = (vehicles || []) as VehicleRecord[];
+  const openMaintenance = (maintenanceJobs || []).filter(
+    (job) => String(job.status || "").toLowerCase() !== "closed",
   );
-  const highRiskDrivers = demoDrivers.filter(
-    (driver) => Number(driver.safety_score || 100) < 85
+  const openSafetyEvents = (safetyEvents || []).filter(
+    (event) => String(event.status || "").toLowerCase() !== "closed",
   );
-  const highRiskVehicles = demoVehicles.filter(
-    (vehicle) => vehicle.alerts >= 2 || vehicle.health < 85
+  const fleetScore =
+    safeDrivers.length > 0
+      ? Math.round(
+          safeDrivers.reduce(
+            (sum, driver) => sum + numberValue(driver.safety_score, 100),
+            0,
+          ) / safeDrivers.length,
+        )
+      : 0;
+  const highRiskDrivers = safeDrivers.filter(
+    (driver) => numberValue(driver.safety_score, 100) < 85,
   );
+  const highRiskVehicles = safeVehicles.filter(
+    (vehicle) =>
+      numberValue(vehicle.alerts) >= 2 ||
+      numberValue(vehicle.health, 100) < 85 ||
+      String(vehicle.status || "").toLowerCase().includes("maintenance"),
+  );
+  const recommendations = [
+    highRiskDrivers.length
+      ? "Review low-scoring drivers before assigning night or high-value trips."
+      : "",
+    highRiskVehicles.length
+      ? "Clear vehicle risk flags before assigning sensitive loads."
+      : "",
+    openMaintenance.length
+      ? "Close open maintenance jobs before dispatch release."
+      : "",
+    openSafetyEvents.length
+      ? "Review AI safety events and attach closure notes."
+      : "",
+  ].filter(Boolean);
 
   return (
     <AppLayout>
@@ -37,17 +100,17 @@ export default function RiskEnginePage() {
             Predictive Driver & Vehicle Risk
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-            Prioritize coaching, maintenance, insurance evidence, and dispatch
-            restrictions before a small risk becomes a large loss.
+            Risk view generated from this customer&apos;s drivers, vehicles,
+            maintenance jobs, and AI safety events.
           </p>
         </section>
 
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Fleet safety score", `${fleetScore}/100`, "AI weighted index"],
-            ["High risk drivers", highRiskDrivers.length, "Coach before next trip"],
-            ["Risk vehicles", highRiskVehicles.length, "Restrict heavy lanes"],
-            ["Evidence events", commandEvents.length, "Ready for review"],
+            ["Fleet safety score", `${fleetScore}/100`, "Driver weighted index"],
+            ["High risk drivers", String(highRiskDrivers.length), "Coach before next trip"],
+            ["Risk vehicles", String(highRiskVehicles.length), "Restrict until cleared"],
+            ["Open evidence", String(openSafetyEvents.length), "Safety events to review"],
           ].map(([label, value, hint]) => (
             <div
               key={label}
@@ -62,18 +125,43 @@ export default function RiskEnginePage() {
 
         <section className="mb-6 grid gap-4 xl:grid-cols-[1fr_0.9fr]">
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
-            <h2 className="text-xl font-bold">Driver Risk Ranking</h2>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold">Driver Risk Ranking</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Based on driver safety score in this workspace.
+                </p>
+              </div>
+              <a
+                href="/drivers"
+                className="rounded-md bg-cyan-400 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-300"
+              >
+                Add driver
+              </a>
+            </div>
             <div className="mt-5 space-y-3">
-              {[...demoDrivers]
+              {safeDrivers.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-700 bg-slate-950/80 p-6 text-center">
+                  <h3 className="text-lg font-black text-white">
+                    No driver risk data yet
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    Add drivers and safety scores to start risk ranking.
+                  </p>
+                </div>
+              ) : null}
+
+              {[...safeDrivers]
                 .sort(
                   (a, b) =>
-                    Number(a.safety_score || 100) - Number(b.safety_score || 100)
+                    numberValue(a.safety_score, 100) -
+                    numberValue(b.safety_score, 100),
                 )
                 .map((driver) => {
-                  const score = Number(driver.safety_score || 100);
+                  const score = numberValue(driver.safety_score, 100);
                   const action =
                     score < 80
-                      ? "Immediate coaching + no night duty"
+                      ? "Immediate coaching + dispatch review"
                       : score < 88
                       ? "Coach on next yard check-in"
                       : "Normal dispatch allowed";
@@ -85,14 +173,16 @@ export default function RiskEnginePage() {
                     >
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                          <p className="font-bold text-white">{driver.name}</p>
+                          <p className="font-bold text-white">
+                            {driver.name || `Driver #${driver.id}`}
+                          </p>
                           <p className="mt-1 text-xs text-slate-500">
-                            {driver.status} | {driver.phone}
+                            {driver.status || "available"} | {driver.phone || "No phone"}
                           </p>
                         </div>
                         <span
                           className={`rounded-md border px-3 py-1 text-xs font-bold ${riskTone(
-                            score
+                            score,
                           )}`}
                         >
                           {score}/100
@@ -108,12 +198,18 @@ export default function RiskEnginePage() {
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
             <h2 className="text-xl font-bold">AI Recommendations</h2>
             <div className="mt-5 space-y-3">
-              {[
-                "Block KA01TR8842 from high-value electronics route until driver distraction review is closed.",
-                "Move RJ14BT4501 to workshop queue before assigning cold-chain load.",
-                "Send forward-collision clip to Rajesh Patil coaching packet.",
-                "Offer lower insurance excess on vehicles with 90+ health and no critical events.",
-              ].map((recommendation, index) => (
+              {recommendations.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-700 bg-slate-950/80 p-6 text-center">
+                  <h3 className="text-lg font-black text-white">
+                    No risk recommendations yet
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    Recommendations appear after drivers, vehicles, maintenance
+                    jobs, or safety events are added.
+                  </p>
+                </div>
+              ) : null}
+              {recommendations.map((recommendation, index) => (
                 <div
                   key={recommendation}
                   className="flex gap-3 rounded-lg border border-slate-800 bg-slate-950/80 p-4"
@@ -134,6 +230,11 @@ export default function RiskEnginePage() {
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
             <h2 className="text-xl font-bold">Vehicle Risk Triggers</h2>
             <div className="mt-5 space-y-3">
+              {highRiskVehicles.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-700 bg-slate-950/80 p-6 text-center text-sm text-slate-400">
+                  No vehicle risk triggers yet.
+                </div>
+              ) : null}
               {highRiskVehicles.map((vehicle) => (
                 <div
                   key={vehicle.id}
@@ -142,18 +243,20 @@ export default function RiskEnginePage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-bold text-white">
-                        {vehicle.vehicle_number}
+                        {vehicle.vehicle_number || `Vehicle #${vehicle.id}`}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
-                        {vehicle.route} | {vehicle.location}
+                        {vehicle.route || "No active route"} |{" "}
+                        {vehicle.location || "No location"}
                       </p>
                     </div>
                     <span className="rounded-md bg-amber-400/10 px-3 py-1 text-xs font-bold text-amber-300">
-                      {vehicle.alerts} alerts
+                      {numberValue(vehicle.alerts)} alerts
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-slate-300">
-                    Health {vehicle.health}% | restrict if maintenance is open.
+                    Health {numberValue(vehicle.health, 100)}% | status{" "}
+                    {vehicle.status || "unknown"}
                   </p>
                 </div>
               ))}
@@ -163,15 +266,20 @@ export default function RiskEnginePage() {
           <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
             <h2 className="text-xl font-bold">Loss Prevention Queue</h2>
             <div className="mt-5 space-y-3">
-              {maintenanceQueue.map((item) => (
+              {openMaintenance.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-700 bg-slate-950/80 p-6 text-center text-sm text-slate-400">
+                  No open maintenance risk yet.
+                </div>
+              ) : null}
+              {openMaintenance.map((item) => (
                 <div
-                  key={`${item.vehicle}-${item.issue}`}
+                  key={item.id}
                   className="rounded-lg border border-slate-800 bg-slate-950/80 p-4"
                 >
-                  <p className="font-bold text-white">{item.vehicle}</p>
+                  <p className="font-bold text-white">{item.vehicle_label}</p>
                   <p className="mt-1 text-sm text-slate-400">{item.issue}</p>
                   <p className="mt-3 text-xs font-bold uppercase text-cyan-300">
-                    Priority: {item.priority}
+                    Priority: {item.priority || "medium"}
                   </p>
                 </div>
               ))}

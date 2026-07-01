@@ -1,17 +1,6 @@
 import Link from "next/link";
 import AppLayout from "../components/AppLayout";
 import DashboardLiveMap from "../components/DashboardLiveMap";
-import {
-  commandEvents,
-  complianceQueue,
-  demoDrivers,
-  demoTrips,
-  demoVehicles,
-  dispatchBoard,
-  maintenanceQueue,
-  receivableAging,
-  transporterKPIs,
-} from "../lib/demoData";
 import { ownerPriorityNotifications, toneClass as notificationToneClass } from "../lib/actionRoutes";
 import { createSupabaseAdminClient } from "../lib/supabaseAdmin";
 import { filterByTenant, getTenantIdForData } from "../lib/tenantData";
@@ -46,8 +35,7 @@ export default async function DashboardPage() {
       filterByTenant(supabase.from("drivers").select("*").order("id"), tenantId),
     ]);
 
-  const vehicles = tenantId
-    ? (tenantVehicles || []).map((vehicle) => ({
+  const vehicles = (tenantVehicles || []).map((vehicle) => ({
         id: Number(vehicle.id),
         vehicle_number: vehicle.vehicle_number || `Vehicle ${vehicle.id}`,
         driver_id: vehicle.driver_id ? Number(vehicle.driver_id) : undefined,
@@ -63,10 +51,8 @@ export default async function DashboardPage() {
         route: vehicle.route || "No active route",
         mode: vehicle.mode || vehicle.vehicle_type || "Fleet",
         health: Number(vehicle.health || 0),
-      }))
-    : demoVehicles;
-  const trips = tenantId
-    ? (tenantTrips || []).map((trip) => ({
+      }));
+  const trips = (tenantTrips || []).map((trip) => ({
         id: Number(trip.id),
         origin: trip.origin || "-",
         destination: trip.destination || "-",
@@ -79,33 +65,28 @@ export default async function DashboardPage() {
         vehicle_id: trip.vehicle_id ? Number(trip.vehicle_id) : undefined,
         driver_id: trip.driver_id ? Number(trip.driver_id) : undefined,
         customer_id: trip.customer_id ? Number(trip.customer_id) : undefined,
-      }))
-    : demoTrips;
-  const drivers = tenantId
-    ? (tenantDrivers || []).map((driver) => ({
+      }));
+  const drivers = (tenantDrivers || []).map((driver) => ({
         id: Number(driver.id),
         name: driver.name || `Driver ${driver.id}`,
         phone: driver.phone || undefined,
         safety_score: Number(driver.safety_score || 0),
         status: driver.status || "available",
-      }))
-    : demoDrivers;
-  const scopedDispatchBoard = tenantId ? [] : dispatchBoard;
-  const scopedReceivableAging = tenantId ? [] : receivableAging;
-  const scopedComplianceQueue = tenantId ? [] : complianceQueue;
-  const scopedMaintenanceQueue = tenantId ? [] : maintenanceQueue;
-  const scopedCommandEvents = tenantId ? [] : commandEvents;
+      }));
+  const scopedDispatchBoard: any[] = [];
+  const scopedReceivableAging: any[] = [];
+  const scopedComplianceQueue: any[] = [];
+  const scopedMaintenanceQueue: any[] = [];
+  const scopedCommandEvents: any[] = [];
   const scopedPriorityNotifications = tenantId ? [] : ownerPriorityNotifications;
-  const scopedKPIs = tenantId
-    ? {
+  const scopedKPIs = {
         cashInBank: 0,
         receivables: 0,
         openInvoices: 0,
         fuelSpend: 0,
         utilization: 0,
         emptyKm: 0,
-      }
-    : transporterKPIs;
+      };
 
   const activeVehicles = vehicles.filter(
     (vehicle) => vehicle.status === "active"
