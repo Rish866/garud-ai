@@ -19,6 +19,13 @@ export async function POST(request: Request) {
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
   const transporterType = String(body.transporterType || "fleet_owner");
+  const logoUrl = String(body.logoUrl || "").trim();
+  const brandColor = String(body.brandColor || "#22d3ee").trim();
+  const portalTitle = String(body.portalTitle || companyName).trim();
+  const workflowTemplate = String(body.workflowTemplate || "standard_tms");
+  const enabledModules = Array.isArray(body.enabledModules)
+    ? body.enabledModules
+    : [];
 
   if (!companyName || !email || password.length < 8) {
     return Response.json(
@@ -45,16 +52,34 @@ export async function POST(request: Request) {
 
   const tenantCode = makeTenantCode(companyName);
 
-  const { data: tenant, error: tenantError } = await supabase
+  let { data: tenant, error: tenantError } = await supabase
     .from("garud_tenants")
     .insert({
       tenant_code: tenantCode,
       company_name: companyName,
       transporter_type: transporterType,
+      logo_url: logoUrl || null,
+      brand_color: brandColor || "#22d3ee",
+      portal_title: portalTitle || companyName,
+      workflow_template: workflowTemplate,
+      enabled_modules: enabledModules,
       status: "active",
     })
     .select("id, tenant_code, company_name")
     .single();
+
+  if (tenantError?.message.toLowerCase().includes("column")) {
+    ({ data: tenant, error: tenantError } = await supabase
+      .from("garud_tenants")
+      .insert({
+        tenant_code: tenantCode,
+        company_name: companyName,
+        transporter_type: transporterType,
+        status: "active",
+      })
+      .select("id, tenant_code, company_name")
+      .single());
+  }
 
   if (tenantError || !tenant) {
     return Response.json(

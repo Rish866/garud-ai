@@ -90,6 +90,14 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [tenantBrand, setTenantBrand] = useState<{
+    company_name?: string | null;
+    transporter_type?: string | null;
+    logo_url?: string | null;
+    brand_color?: string | null;
+    portal_title?: string | null;
+    workflow_template?: string | null;
+  } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -101,10 +109,12 @@ export default function AppLayout({
 
         if (mounted) {
           setIsSuperAdmin(Boolean(result.session?.isSuperAdmin));
+          setTenantBrand(result.session?.tenantBrand || null);
         }
       } catch {
         if (mounted) {
           setIsSuperAdmin(false);
+          setTenantBrand(null);
         }
       }
     }
@@ -116,31 +126,50 @@ export default function AppLayout({
     };
   }, []);
 
+  const portalTitle = isSuperAdmin
+    ? "GARUD AI"
+    : tenantBrand?.portal_title || tenantBrand?.company_name || "GARUD AI";
+  const portalSubtitle = isSuperAdmin
+    ? "Transport OS"
+    : tenantBrand?.transporter_type
+        ?.replace(/_/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase()) || "Customer ERP";
+  const brandColor = tenantBrand?.brand_color || "#22d3ee";
+  const logoUrl = tenantBrand?.logo_url || "/logo.png";
+
   return (
     <div className="flex min-h-screen bg-[#05070d] text-white">
       <aside className="sticky top-0 hidden h-screen w-96 shrink-0 overflow-y-auto border-r border-white/10 bg-[#07111f]/95 xl:block">
         <div className="border-b border-white/10 p-6">
           <Link href="/dashboard" className="flex items-center gap-4">
             <div className="relative h-24 w-24 overflow-hidden rounded-xl border border-cyan-400/20 bg-white shadow-lg shadow-cyan-950/30">
-              <Image
-                src="/logo.png"
-                alt="GARUD AI"
-                fill
-                sizes="96px"
-                className="object-contain p-2"
-                priority
-              />
+              {tenantBrand?.logo_url ? (
+                <img
+                  src={logoUrl}
+                  alt={portalTitle}
+                  className="h-full w-full object-contain p-2"
+                />
+              ) : (
+                <Image
+                  src="/logo.png"
+                  alt="GARUD AI"
+                  fill
+                  sizes="96px"
+                  className="object-contain p-2"
+                  priority
+                />
+              )}
             </div>
 
             <div>
               <h1 className="text-3xl font-black tracking-tight text-white">
-                GARUD AI
+                {portalTitle}
               </h1>
-              <p className="mt-1 text-sm font-semibold text-cyan-200">
-                Transport OS
+              <p className="mt-1 text-sm font-semibold" style={{ color: brandColor }}>
+                {portalSubtitle}
               </p>
               <p className="mt-2 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-xs font-bold text-emerald-300">
-                ERP + AI Safety
+                {isSuperAdmin ? "ERP + AI Safety" : "Powered by GARUD AI"}
               </p>
             </div>
           </Link>
@@ -155,9 +184,11 @@ export default function AppLayout({
         <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070d]/90 px-6 py-4 backdrop-blur">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black">GARUD AI Transport ERP</h2>
+              <h2 className="text-xl font-black">{portalTitle}</h2>
               <p className="text-sm text-slate-400">
-                Start, dispatch, finance, compliance, GPS, and AI safety
+                {isSuperAdmin
+                  ? "Start, dispatch, finance, compliance, GPS, and AI safety"
+                  : `${portalSubtitle} workspace managed on GARUD AI`}
               </p>
             </div>
 

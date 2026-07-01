@@ -6,9 +6,19 @@ const transporterTypes = [
   { value: "fleet_owner", label: "Fleet owner" },
   { value: "market_load_operator", label: "Market load operator" },
   { value: "cold_chain", label: "Cold chain" },
+  { value: "container_logistics", label: "Container logistics" },
+  { value: "parcel_last_mile", label: "Parcel / last-mile" },
   { value: "bus_operator", label: "Bus operator" },
   { value: "construction_tipper", label: "Construction / tipper" },
   { value: "3pl_logistics", label: "3PL logistics" },
+];
+
+const workflowTemplates = [
+  { value: "standard_tms", label: "Standard trip to payment" },
+  { value: "cold_chain", label: "Cold chain with temperature checks" },
+  { value: "container", label: "Container gate-in / gate-out" },
+  { value: "parcel", label: "Parcel hub and delivery scans" },
+  { value: "bus", label: "Bus route and attendance" },
 ];
 
 function makePassword() {
@@ -21,6 +31,10 @@ export default function OnboardingClient() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [transporterType, setTransporterType] = useState("fleet_owner");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [brandColor, setBrandColor] = useState("#22d3ee");
+  const [portalTitle, setPortalTitle] = useState("");
+  const [workflowTemplate, setWorkflowTemplate] = useState("standard_tms");
   const [password, setPassword] = useState(makePassword());
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
@@ -49,6 +63,10 @@ export default function OnboardingClient() {
           email,
           password,
           transporterType,
+          logoUrl,
+          brandColor,
+          portalTitle,
+          workflowTemplate,
         }),
       });
       const data = await response.json();
@@ -145,6 +163,53 @@ export default function OnboardingClient() {
           </label>
 
           <label className="mt-4 block text-sm font-bold text-slate-700">
+            Portal title
+            <input
+              value={portalTitle}
+              onChange={(event) => setPortalTitle(event.target.value)}
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none focus:border-cyan-500 focus:bg-white"
+              placeholder="Customer ERP title, blank uses company name"
+            />
+          </label>
+
+          <label className="mt-4 block text-sm font-bold text-slate-700">
+            Customer logo URL
+            <input
+              value={logoUrl}
+              onChange={(event) => setLogoUrl(event.target.value)}
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none focus:border-cyan-500 focus:bg-white"
+              placeholder="https://example.com/logo.png"
+            />
+          </label>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm font-bold text-slate-700">
+              Brand color
+              <input
+                value={brandColor}
+                onChange={(event) => setBrandColor(event.target.value)}
+                type="color"
+                className="mt-2 h-12 w-full rounded-lg border border-slate-200 bg-slate-50 p-1"
+              />
+            </label>
+
+            <label className="block text-sm font-bold text-slate-700">
+              Workflow
+              <select
+                value={workflowTemplate}
+                onChange={(event) => setWorkflowTemplate(event.target.value)}
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none focus:border-cyan-500 focus:bg-white"
+              >
+                {workflowTemplates.map((template) => (
+                  <option key={template.value} value={template.value}>
+                    {template.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="mt-4 block text-sm font-bold text-slate-700">
             Temporary password
             <div className="mt-2 flex gap-2">
               <input
@@ -178,6 +243,8 @@ export default function OnboardingClient() {
             {[
               "Unique GARUD customer ID",
               "Fresh ERP workspace",
+              "Customer logo and portal title",
+              "Transporter type template",
               "Owner login only, no signup",
               "Tenant-ready ERP records",
               "Onboarding checklist",
