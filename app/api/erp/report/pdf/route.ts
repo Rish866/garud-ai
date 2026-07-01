@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { createSupabaseAdminClient } from "../../../../lib/supabaseAdmin";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 type ReportBody = {
   title?: string;
   moduleKey?: string;
@@ -127,7 +130,7 @@ export async function POST(request: Request) {
 
   const bytes = await pdf.save();
 
-  return new NextResponse(Buffer.from(bytes), {
+  return new NextResponse(new Uint8Array(bytes), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${title
