@@ -22,17 +22,16 @@ function text(value: unknown) {
 }
 
 export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as ReportBody;
-    const title = body.title || "GARUD AI ERP Report";
-    const columns = body.columns || [];
-    const rows = body.rows || [];
+  const body = (await request.json()) as ReportBody;
+  const title = body.title || "GARUD AI ERP Report";
+  const columns = body.columns || [];
+  const rows = body.rows || [];
 
-    const pdf = await PDFDocument.create();
-    const page = pdf.addPage([842, 595]);
-    const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-    const regular = await pdf.embedFont(StandardFonts.Helvetica);
-    const { height } = page.getSize();
+  const pdf = await PDFDocument.create();
+  const page = pdf.addPage([842, 595]);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const regular = await pdf.embedFont(StandardFonts.Helvetica);
+  const { height } = page.getSize();
 
   page.drawRectangle({
     x: 0,
@@ -135,22 +134,13 @@ export async function POST(request: Request) {
 
   const bytes = await pdf.save();
 
-    return new NextResponse(new Uint8Array(bytes), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "")}.pdf"`,
-      },
-    });
-  } catch (error) {
-    return Response.json(
-      {
-        ok: false,
-        message: error instanceof Error ? error.message : "PDF export failed",
-      },
-      { status: 500 },
-    );
-  }
+  return new NextResponse(new Uint8Array(bytes), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")}.pdf"`,
+    },
+  });
 }
