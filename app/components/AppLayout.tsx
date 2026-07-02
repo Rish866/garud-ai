@@ -40,9 +40,17 @@ const navSections = [
       { name: "Invoices", href: "/invoices", icon: "INV" },
       { name: "Payments", href: "/payments", icon: "PMT" },
       { name: "Receivables", href: "/receivables", icon: "REC" },
+      { name: "Accounting", href: "/accounting", icon: "ACC" },
       { name: "Fuel", href: "/fuel-management", icon: "FUEL" },
       { name: "Driver Salary", href: "/driver-salary", icon: "PAY" },
       { name: "Billing Packs", href: "/billing-packs", icon: "POD" },
+      { name: "Statements", href: "/financial-statements", icon: "BS" },
+    ],
+  },
+  {
+    title: "Inventory",
+    items: [
+      { name: "Inventory Management", href: "/inventory-management", icon: "STK" },
     ],
   },
   {

@@ -33,4 +33,6 @@ export const erpTableRequirements: ERPTableRequirement[] = [
   { table: "erp_approvals", label: "Workflow approvals", module: "Automation", critical: true },
   { table: "erp_integrations", label: "Integration registry", module: "Admin", critical: false },
   { table: "erp_device_mappings", label: "Vehicle device mappings", module: "Integrations", critical: true },
+  { table: "erp_accounting_entries", label: "Tally-style accounting entries", module: "Accounting", critical: true },
+  { table: "erp_inventory_items", label: "Inventory stock master", module: "Inventory", critical: true },
 ];
