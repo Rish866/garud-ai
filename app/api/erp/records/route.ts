@@ -4,6 +4,13 @@ import { erpTableRequirements } from "../../../lib/erpSchema";
 import { createSupabaseAdminClient } from "../../../lib/supabaseAdmin";
 import { filterByTenant, getTenantIdForData, withTenantId } from "../../../lib/tenantData";
 import { getCurrentTenant } from "../../../lib/tenant";
+import {
+  afterAccountingCreate,
+  afterAccountingUpdate,
+  beforeAccountingDelete,
+  beforeAccountingUpdate,
+  isAccountingTable,
+} from "../../../lib/accountingAutomation";
 
 const allowedTables = new Set(erpTableRequirements.map((item) => item.table));
 
@@ -85,6 +92,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
   }
 
+  if (isAccountingTable(table)) {
+    await afterAccountingCreate(supabase, data, await getTenantIdForData());
+  }
+
   return NextResponse.json({ ok: true, data });
 }
 
@@ -103,6 +114,19 @@ export async function PATCH(request: Request) {
 
   const supabase = createSupabaseAdminClient();
   const tenantId = await getTenantIdForData();
+  let previousRecord: Record<string, any> | null = null;
+
+  if (isAccountingTable(table)) {
+    const { data: previous } = await supabase
+      .from(table)
+      .select("*")
+      .eq("id", body.id)
+      .eq("tenant_id", tenantId || "00000000-0000-0000-0000-000000000000")
+      .maybeSingle();
+    previousRecord = previous || null;
+    await beforeAccountingUpdate(supabase, previousRecord, tenantId);
+  }
+
   const { data, error } = await supabase
     .from(table)
     .update(body.values)
@@ -112,7 +136,14 @@ export async function PATCH(request: Request) {
     .single();
 
   if (error) {
+    if (isAccountingTable(table) && previousRecord) {
+      await afterAccountingCreate(supabase, previousRecord, tenantId);
+    }
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+  }
+
+  if (isAccountingTable(table)) {
+    await afterAccountingUpdate(supabase, data, tenantId);
   }
 
   return NextResponse.json({ ok: true, data });
@@ -133,6 +164,19 @@ export async function DELETE(request: Request) {
 
   const supabase = createSupabaseAdminClient();
   const tenantId = await getTenantIdForData();
+  let previousRecord: Record<string, any> | null = null;
+
+  if (isAccountingTable(table)) {
+    const { data: previous } = await supabase
+      .from(table)
+      .select("*")
+      .eq("id", body.id)
+      .eq("tenant_id", tenantId || "00000000-0000-0000-0000-000000000000")
+      .maybeSingle();
+    previousRecord = previous || null;
+    await beforeAccountingDelete(supabase, previousRecord, tenantId);
+  }
+
   const { error } = await supabase
     .from(table)
     .delete()
@@ -140,6 +184,9 @@ export async function DELETE(request: Request) {
     .eq("tenant_id", tenantId || "00000000-0000-0000-0000-000000000000");
 
   if (error) {
+    if (isAccountingTable(table) && previousRecord) {
+      await afterAccountingCreate(supabase, previousRecord, tenantId);
+    }
     return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
   }
 

@@ -13,11 +13,18 @@ function money(value: number) {
 export default async function InventoryManagementPage() {
   const supabase = createSupabaseAdminClient();
   const tenantId = await getTenantIdForData();
-  const { data } = await filterByTenant(
+  const [{ data }, { data: movements }] = await Promise.all([
+    filterByTenant(
     supabase.from("erp_inventory_items").select("*").order("item_name"),
     tenantId,
-  );
+    ),
+    filterByTenant(
+      supabase.from("erp_stock_movements").select("*").order("created_at", { ascending: false }),
+      tenantId,
+    ),
+  ]);
   const items = data || [];
+  const stockMovements = movements || [];
   const stockValue = items.reduce(
     (sum, item) => sum + Number(item.current_stock || 0) * Number(item.purchase_rate || 0),
     0,
@@ -91,6 +98,46 @@ export default async function InventoryManagementPage() {
             { key: "status", label: "Status", type: "select", options: ["active", "inactive"], required: true },
           ]}
         />
+
+        <section className="mt-6 rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+          <h2 className="text-xl font-bold">Stock Movement Ledger</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Auto-created from purchase and sales vouchers.
+          </p>
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[840px] text-left text-sm">
+              <thead className="text-slate-400">
+                <tr>
+                  {["Item", "Type", "Qty", "Rate", "Amount", "Stock After", "Source"].map((head) => (
+                    <th key={head} className="border-b border-slate-800 pb-3 font-medium">
+                      {head}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {stockMovements.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-slate-500">
+                      No stock movements yet. Purchase and sales entries will appear here.
+                    </td>
+                  </tr>
+                ) : null}
+                {stockMovements.slice(0, 25).map((movement) => (
+                  <tr key={movement.id} className="border-b border-slate-800">
+                    <td className="py-3 font-bold text-white">{movement.item_name}</td>
+                    <td className="py-3 text-slate-300">{movement.movement_type}</td>
+                    <td className="py-3 text-slate-300">{movement.quantity}</td>
+                    <td className="py-3 text-slate-300">{money(Number(movement.rate || 0))}</td>
+                    <td className="py-3 text-slate-300">{money(Number(movement.amount || 0))}</td>
+                    <td className="py-3 text-slate-300">{movement.stock_after ?? "-"}</td>
+                    <td className="py-3 text-slate-300">{movement.source_type || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </AppLayout>
   );

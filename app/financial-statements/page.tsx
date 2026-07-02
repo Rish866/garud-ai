@@ -16,12 +16,14 @@ function sumBy(entries: Array<Record<string, any>>, match: (entry: Record<string
 export default async function FinancialStatementsPage() {
   const supabase = createSupabaseAdminClient();
   const tenantId = await getTenantIdForData();
-  const [{ data: entries }, { data: inventory }] = await Promise.all([
+  const [{ data: entries }, { data: inventory }, { data: ledgerPostings }] = await Promise.all([
     filterByTenant(supabase.from("erp_accounting_entries").select("*"), tenantId),
     filterByTenant(supabase.from("erp_inventory_items").select("*"), tenantId),
+    filterByTenant(supabase.from("erp_ledger_postings").select("*"), tenantId),
   ]);
   const safeEntries = entries || [];
   const safeInventory = inventory || [];
+  const safeLedgerPostings = ledgerPostings || [];
   const purchases = sumBy(safeEntries, (entry) => String(entry.entry_type || "").startsWith("Purchase"));
   const sales = sumBy(safeEntries, (entry) => String(entry.entry_type || "").startsWith("Sales"));
   const directExpenses = sumBy(safeEntries, (entry) => String(entry.entry_type || "").includes("Expense"));
@@ -51,6 +53,16 @@ export default async function FinancialStatementsPage() {
     ["Balance Sheet", "Liabilities", money(liabilities)],
     ["Balance Sheet", "Capital balancing figure", money(capital)],
   ];
+  const ledgerTotals = safeLedgerPostings.reduce<Record<string, { debit: number; credit: number }>>(
+    (totals, posting) => {
+      const ledgerName = String(posting.ledger_name || "Ledger");
+      totals[ledgerName] ||= { debit: 0, credit: 0 };
+      totals[ledgerName].debit += Number(posting.debit || 0);
+      totals[ledgerName].credit += Number(posting.credit || 0);
+      return totals;
+    },
+    {},
+  );
 
   return (
     <AppLayout>
@@ -118,6 +130,43 @@ export default async function FinancialStatementsPage() {
               </div>
             </div>
           ))}
+        </section>
+
+        <section className="mt-6 rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+          <h2 className="text-xl font-bold">Ledger Posting Summary</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Double-entry ledger lines auto-created from purchase, sales,
+            receipt, payment, and expense vouchers.
+          </p>
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="text-slate-400">
+                <tr>
+                  <th className="border-b border-slate-800 pb-3 font-medium">Ledger</th>
+                  <th className="border-b border-slate-800 pb-3 font-medium">Debit</th>
+                  <th className="border-b border-slate-800 pb-3 font-medium">Credit</th>
+                  <th className="border-b border-slate-800 pb-3 font-medium">Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(ledgerTotals).length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-6 text-center text-slate-500">
+                      No ledger postings yet. New vouchers will post here automatically.
+                    </td>
+                  </tr>
+                ) : null}
+                {Object.entries(ledgerTotals).map(([ledgerName, total]) => (
+                  <tr key={ledgerName} className="border-b border-slate-800">
+                    <td className="py-3 font-bold text-white">{ledgerName}</td>
+                    <td className="py-3 text-slate-300">{money(total.debit)}</td>
+                    <td className="py-3 text-slate-300">{money(total.credit)}</td>
+                    <td className="py-3 text-cyan-300">{money(total.debit - total.credit)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </AppLayout>

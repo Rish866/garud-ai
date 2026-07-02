@@ -35,4 +35,6 @@ export const erpTableRequirements: ERPTableRequirement[] = [
   { table: "erp_device_mappings", label: "Vehicle device mappings", module: "Integrations", critical: true },
   { table: "erp_accounting_entries", label: "Tally-style accounting entries", module: "Accounting", critical: true },
   { table: "erp_inventory_items", label: "Inventory stock master", module: "Inventory", critical: true },
+  { table: "erp_stock_movements", label: "Inventory stock movement ledger", module: "Inventory", critical: true },
+  { table: "erp_ledger_postings", label: "Double-entry ledger postings", module: "Accounting", critical: true },
 ];
