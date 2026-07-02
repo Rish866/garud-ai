@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 const navSections = [
   {
-    title: "Start Here",
+    title: "Command",
     items: [
       { name: "ERP Home", href: "/start", icon: "GO" },
       { name: "Dashboard", href: "/dashboard", icon: "DB" },
@@ -25,39 +25,50 @@ const navSections = [
     ],
   },
   {
-    title: "Trip Operations",
+    title: "Operations ERP",
     items: [
       { name: "Trips", href: "/trips", icon: "TRP" },
-      { name: "Route Planner", href: "/route-planner", icon: "RT" },
       { name: "TMS Lifecycle", href: "/tms", icon: "TMS" },
+      { name: "Owned Vehicle Ops", href: "/erp/owned-vehicle-operations", icon: "OWN" },
+      { name: "Hired Vehicle Ops", href: "/erp/hired-vehicle-operations", icon: "HIRE" },
+      { name: "PTL / FTL Consignment", href: "/erp/consignment-ptl-ftl", icon: "CN" },
+      { name: "Challan & E-POD", href: "/erp/challan-epod", icon: "POD" },
+      { name: "Route Planner", href: "/route-planner", icon: "RT" },
       { name: "Customer Portal", href: "/customer-portal", icon: "PORT" },
-      { name: "Trip Expenses", href: "/trip-expenses", icon: "EXP" },
     ],
   },
   {
-    title: "Money",
+    title: "Settlement & Billing",
     items: [
+      { name: "Trip Settlement", href: "/erp/trip-settlement", icon: "SETL" },
+      { name: "Trip Expenses", href: "/trip-expenses", icon: "EXP" },
       { name: "Invoices", href: "/invoices", icon: "INV" },
+      { name: "Finance & Revenue", href: "/erp/finance-revenue-operations", icon: "REV" },
+      { name: "Rate Charts", href: "/erp/client-rate-chart", icon: "RATE" },
       { name: "Payments", href: "/payments", icon: "PMT" },
       { name: "Receivables", href: "/receivables", icon: "REC" },
+      { name: "Billing Packs", href: "/billing-packs", icon: "POD" },
+    ],
+  },
+  {
+    title: "Accounts & Inventory",
+    items: [
       { name: "Accounting", href: "/accounting", icon: "ACC" },
+      { name: "Account Management ERP", href: "/erp/account-management-erp", icon: "LED" },
+      { name: "Statements", href: "/financial-statements", icon: "BS" },
+      { name: "Inventory Management", href: "/inventory-management", icon: "STK" },
+      { name: "Stationery Management", href: "/erp/stationery-management", icon: "STN" },
       { name: "Fuel", href: "/fuel-management", icon: "FUEL" },
       { name: "Driver Salary", href: "/driver-salary", icon: "PAY" },
-      { name: "Billing Packs", href: "/billing-packs", icon: "POD" },
-      { name: "Statements", href: "/financial-statements", icon: "BS" },
     ],
   },
   {
-    title: "Inventory",
-    items: [
-      { name: "Inventory Management", href: "/inventory-management", icon: "STK" },
-    ],
-  },
-  {
-    title: "Workshop & Compliance",
+    title: "Maintenance ERP",
     items: [
       { name: "Maintenance", href: "/maintenance-center", icon: "MNT" },
+      { name: "Maintenance ERP", href: "/erp/maintenance-erp", icon: "JOB" },
       { name: "Tyres", href: "/tyre-management", icon: "TYR" },
+      { name: "Cost of Ownership", href: "/erp/cost-of-ownership", icon: "COO" },
       { name: "Document Alerts", href: "/document-alerts", icon: "DUE" },
       { name: "Profitability", href: "/profitability", icon: "ROI" },
     ],
@@ -73,7 +84,7 @@ const navSections = [
     ],
   },
   {
-    title: "Reports & Admin",
+    title: "Reports, Admin & Setup",
     items: [
       { name: "Reports", href: "/reports", icon: "RPT" },
       { name: "Integrations", href: "/integrations", icon: "API" },

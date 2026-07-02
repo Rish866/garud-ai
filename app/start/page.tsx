@@ -3,32 +3,32 @@ import AppLayout from "../components/AppLayout";
 
 const dailyActions = [
   {
-    title: "Add fleet master data",
-    copy: "Start here for new vehicles, drivers, customers, and documents.",
+    title: "1. Setup masters",
+    copy: "Create the base data used everywhere: vehicles, drivers, customers, ledgers, documents, and rate charts.",
     href: "/vehicles",
-    action: "Open master data",
-    items: ["Vehicles", "Drivers", "Customers", "Documents"],
+    action: "Open master setup",
+    items: ["Vehicles", "Drivers", "Customers", "Ledgers", "Rate Charts"],
   },
   {
-    title: "Run a trip",
-    copy: "Plan lane, assign truck/driver, track trip, and capture expenses.",
+    title: "2. Run operations",
+    copy: "Book PTL or FTL consignments, assign owned or hired vehicles, create challans, and capture E-POD.",
     href: "/trips",
-    action: "Create or manage trips",
-    items: ["Trips", "Route Planner", "Trip Expenses", "POD"],
+    action: "Open operations desk",
+    items: ["Trips", "Owned Ops", "Hired Ops", "Challan", "E-POD"],
   },
   {
-    title: "Bill and collect",
-    copy: "Generate invoices, build billing packs, receive payments, and control credit.",
-    href: "/invoices",
-    action: "Open billing desk",
-    items: ["Invoices", "Payments", "Receivables", "Billing Packs"],
+    title: "3. Settle and bill",
+    copy: "Close trip settlement, recover detention, generate freight bills, collect payments, and update receivables.",
+    href: "/erp/trip-settlement",
+    action: "Open settlement desk",
+    items: ["Settlement", "Freight Bill", "Receipts", "Receivables", "Trip P&L"],
   },
   {
-    title: "Keep fleet safe",
-    copy: "Monitor dashcams, review AI alerts, request clips, and close safety issues.",
-    href: "/live-dashcam",
-    action: "Open AI safety",
-    items: ["Live Dashcam", "Safety Events", "Video Requests", "Risk Engine"],
+    title: "4. Control assets",
+    copy: "Manage maintenance, tyre, battery, parts, fuel, inventory, documents, AI safety, and cost of ownership.",
+    href: "/erp/maintenance-erp",
+    action: "Open asset control",
+    items: ["Maintenance", "Inventory", "Fuel", "Documents", "AI Safety"],
   },
 ];
 
@@ -36,19 +36,20 @@ const setupSteps = [
   { label: "1", title: "Create vehicles", href: "/vehicles", copy: "Add truck number, model, driver, GPS and status." },
   { label: "2", title: "Create drivers", href: "/drivers", copy: "Add license, phone, assigned vehicle and duty status." },
   { label: "3", title: "Create customers", href: "/customers", copy: "Add customer accounts before creating trips and invoices." },
-  { label: "4", title: "Create first trip", href: "/trips", copy: "Assign customer, vehicle, driver, origin, destination and revenue." },
-  { label: "5", title: "Upload documents", href: "/document-center", copy: "Store RC, permit, insurance, POD, invoice and fuel bills." },
-  { label: "6", title: "Map GPS/devices", href: "/integrations", copy: "Add GPS vendor, API credentials, IMEI and device IDs." },
-  { label: "7", title: "Invite users", href: "/settings", copy: "Give operations, finance, safety and viewer access." },
+  { label: "4", title: "Load ledgers and rates", href: "/erp/account-management-erp", copy: "Create cash, bank, vendor, customer, expense and income ledgers." },
+  { label: "5", title: "Create first trip", href: "/trips", copy: "Assign customer, vehicle, driver, origin, destination and revenue." },
+  { label: "6", title: "Close settlement", href: "/erp/trip-settlement", copy: "Record advance, expenses, POD, invoice, receipt and driver balance." },
+  { label: "7", title: "Connect devices", href: "/integrations", copy: "Map GPS, dashcam, fuel sensor, e-lock and temperature device IDs." },
+  { label: "8", title: "Invite users", href: "/settings", copy: "Give operations, accounts, workshop, safety and viewer access." },
 ];
 
 const departments = [
-  ["Owner", "Dashboard, Control Tower, Reports, Settings"],
-  ["Dispatch", "Trips, Route Planner, Vehicles, Drivers"],
-  ["Accounts", "Invoices, Payments, Receivables, Driver Salary"],
-  ["Workshop", "Maintenance, Tyres, Documents"],
-  ["Safety", "Live Dashcam, Safety Events, Video Requests"],
-  ["IT / Vendor", "Integrations, Device Mapping, API Health"],
+  ["Owner", "Dashboard, Control Tower, Cost of Ownership, Profitability, Reports"],
+  ["Operations", "Trips, TMS Lifecycle, Owned Vehicle Ops, Hired Vehicle Ops, PTL / FTL"],
+  ["Settlement", "Trip Settlement, Challan & E-POD, Billing Packs, Invoices, Receivables"],
+  ["Accounts", "Accounting, Account Management ERP, Statements, Payments, Driver Salary"],
+  ["Workshop", "Maintenance ERP, Maintenance, Tyres, Inventory, Documents"],
+  ["Safety / IT", "Live Dashcam, Safety Events, Video Requests, Integrations, Device Mapping"],
 ];
 
 export const dynamic = "force-dynamic";
@@ -68,8 +69,9 @@ export default function StartPage() {
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                 GARUD AI is arranged around daily transporter work: add master
-                data, run trips, bill customers, collect money, manage safety,
-                and control users.
+                data, run owned or hired vehicle operations, settle trips,
+                bill customers, manage accounts, control maintenance, and
+                monitor AI safety from one workspace.
               </p>
             </div>
             <Link
